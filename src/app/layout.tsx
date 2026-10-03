@@ -21,7 +21,7 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   colorScheme: "light",
-  themeColor: "#fdfdfc",
+  themeColor: "#faf9f7",
 };
 
 export default function RootLayout({
@@ -29,7 +29,7 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" className={`h-full ${aspekta.variable}`} suppressHydrationWarning>
-      <body className="h-full w-full bg-bg text-neutral-900 antialiased font-sans">
+      <body className="h-full w-full bg-bg text-stone-900 antialiased font-sans">
         <Shell>{children}</Shell>
       </body>
     </html>

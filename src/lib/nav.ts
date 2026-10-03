@@ -4,7 +4,7 @@ export const NAV = [
 ];
 
 export const CONTACT_LINKS = [
-  { label: "hello@sagnik.wtf", href: "mailto:sahoosagnik1@gmail.com" },
+  { label: "sahoosagnik1@gmail.com", href: "mailto:sahoosagnik1@gmail.com" },
   { label: "@heysagnik", href: "https://x.com/heysagnik" },
   { label: "LinkedIn", href: "https://www.linkedin.com/in/heysagnik/" },
 ];

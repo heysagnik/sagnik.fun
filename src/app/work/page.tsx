@@ -1,17 +1,16 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { ROWS, type Project, getProjectById } from "@/lib/projects";
+import { type Project, getAllProjects, getProjectById } from "@/lib/projects";
 import BottomSheet from "@/components/BottomSheet";
 
 interface CardProps {
   project: Project;
-  half?: boolean;
   delay?: number;
   onClick: () => void;
 }
 
-function Card({ project, half, delay = 0, onClick }: CardProps) {
+function Card({ project, delay = 0, onClick }: CardProps) {
   return (
     <button
       type="button"
@@ -26,7 +25,7 @@ function Card({ project, half, delay = 0, onClick }: CardProps) {
 
       <div
         className={`card-media relative w-full overflow-hidden rounded-xl bg-surface ${
-          project.fullBleedImage ? "aspect-[1200/630]" : half ? "aspect-[310.5/406]" : "aspect-[661/406]"
+          project.fullBleedImage ? "aspect-[1200/630]" : "aspect-[661/406]"
         }`}
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -88,31 +87,14 @@ export function WorkView({ initialSlug }: { initialSlug?: string }) {
 
   return (
     <>
-      {ROWS.map((row, i) =>
-        "full" in row ? (
-          <Card
-            key={row.full.id}
-            project={row.full}
-            delay={Math.min(i * 60, 240)}
-            onClick={() => handleOpen(row.full)}
-          />
-        ) : (
-          <div key={i} className="grid grid-cols-1 gap-6 md:grid-cols-2">
-            <Card
-              project={row.pair[0]}
-              half
-              delay={Math.min(i * 60, 240)}
-              onClick={() => handleOpen(row.pair[0])}
-            />
-            <Card
-              project={row.pair[1]}
-              half
-              delay={Math.min(i * 60 + 30, 240)}
-              onClick={() => handleOpen(row.pair[1])}
-            />
-          </div>
-        )
-      )}
+      {getAllProjects().map((project, i) => (
+        <Card
+          key={project.id}
+          project={project}
+          delay={Math.min(i * 60, 240)}
+          onClick={() => handleOpen(project)}
+        />
+      ))}
 
       <BottomSheet project={selectedProject} onClose={handleClose} />
     </>

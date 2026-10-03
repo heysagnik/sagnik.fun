@@ -85,13 +85,13 @@ export default function Sidebar() {
                 {isActive && (
                   <motion.div
                     layoutId="figma-select-box"
-                    className="absolute inset-0 pointer-events-none border border-[#0d99ff] bg-[#0d99ff]/[0.06]"
+                    className="absolute inset-0 pointer-events-none border border-link bg-link/[0.06]"
                     transition={{ type: "spring", stiffness: 500, damping: 35 }}
                   >
-                    <span className="absolute -top-[3px] -left-[3px] size-[5px] border border-[#0d99ff] bg-white" />
-                    <span className="absolute -top-[3px] -right-[3px] size-[5px] border border-[#0d99ff] bg-white" />
-                    <span className="absolute -bottom-[3px] -left-[3px] size-[5px] border border-[#0d99ff] bg-white" />
-                    <span className="absolute -bottom-[3px] -right-[3px] size-[5px] border border-[#0d99ff] bg-white" />
+                    <span className="absolute -top-[3px] -left-[3px] size-[5px] border border-link bg-white" />
+                    <span className="absolute -top-[3px] -right-[3px] size-[5px] border border-link bg-white" />
+                    <span className="absolute -bottom-[3px] -left-[3px] size-[5px] border border-link bg-white" />
+                    <span className="absolute -bottom-[3px] -right-[3px] size-[5px] border border-link bg-white" />
                   </motion.div>
                 )}
                 <span className="relative z-10">{item.label}</span>

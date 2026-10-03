@@ -3,14 +3,14 @@
 @theme {
   --font-sans: var(--font-aspekta), ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 
-  --color-bg: #fdfdfc;
-  --color-ink: #2b303b;
-  --color-muted: #99a0ae;
-  --color-link: #2768c1;
-  --color-border: #e1e4ea;
-  --color-surface: #e9e9e9;
+  --color-bg: #faf9f7;
+  --color-ink: #1f1e1b;
+  --color-muted: #8f8b83;
+  --color-link: #b9460f;
+  --color-border: #e4e1db;
+  --color-surface: #efedea;
   --color-highlight: #ffdd1a;
-  --color-heat-0: #e1e4ea;
+  --color-heat-0: #e4e1db;
   --color-heat-1: #b6e6b0;
   --color-heat-2: #7bcb73;
   --color-heat-3: #3fa73a;

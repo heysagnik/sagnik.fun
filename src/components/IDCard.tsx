@@ -17,7 +17,7 @@ export default function IDCard() {
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src="/lanyard-strap.png"
+          src="/images/about/lanyard-strap.png"
           alt=""
           className="absolute left-1/2 z-[15] top-[-184px] h-[210px] w-[28px] -translate-x-1/2 object-cover drop-shadow-[0_4px_5px_rgba(0,0,0,0.2)] md:top-[-228px] md:h-[254px]"
         />
@@ -53,7 +53,7 @@ export default function IDCard() {
             <div className="relative size-24 overflow-hidden rounded-full bg-white ring-4 ring-white shadow-[0_6px_16px_-6px_rgba(20,20,20,0.35)]">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src="/profile.png"
+                src="/images/about/profile.png"
                 alt="Sagnik"
                 className="absolute inset-0 h-full w-full object-cover"
               />

@@ -53,7 +53,7 @@ export default function About() {
                 <span
                   aria-hidden
                   className={`absolute top-[5px] left-0 size-[7px] rounded-full ring-4 ring-bg ${
-                    current ? "bg-ink" : "bg-neutral-300"
+                    current ? "bg-ink" : "bg-stone-300"
                   }`}
                 />
 

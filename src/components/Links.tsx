@@ -51,7 +51,7 @@ export default function Links({ company, url, screenshot }: LinksProps) {
             className="link-preview pointer-events-none fixed z-50 rounded-xl p-[3px] bg-white/60 backdrop-blur-md border border-white/80 shadow-[0_16px_36px_-8px_rgba(0,0,0,0.22),0_4px_12px_-2px_rgba(0,0,0,0.1)] ring-1 ring-black/[0.06]"
             style={{ left: hover.x, top: hover.y, width: 280, height: 175 }}
           >
-            <div className="relative h-full w-full overflow-hidden rounded-[9px] bg-neutral-100">
+            <div className="relative h-full w-full overflow-hidden rounded-[9px] bg-stone-100">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={screenshot}
