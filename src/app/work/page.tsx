@@ -3,41 +3,8 @@
 import { useState, useEffect, useCallback } from "react";
 import { type Project, getAllProjects, getProjectById } from "@/lib/projects";
 import BottomSheet from "@/components/BottomSheet";
-
-interface CardProps {
-  project: Project;
-  delay?: number;
-  onClick: () => void;
-}
-
-function Card({ project, delay = 0, onClick }: CardProps) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="card-enter flex w-full flex-col gap-4 text-left cursor-pointer transition-transform duration-150 ease-out active:scale-[0.98]"
-      style={{ animationDelay: `${delay}ms` }}
-    >
-      <div className="text-[14px] leading-6">
-        <p className="text-ink">{project.title}</p>
-        <p className="text-muted">{project.meta}</p>
-      </div>
-
-      <div
-        className={`card-media relative w-full overflow-hidden rounded-xl bg-surface ${
-          project.fullBleedImage ? "aspect-[1200/630]" : "aspect-[661/406]"
-        }`}
-      >
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={project.image}
-          alt={project.title}
-          className={`absolute inset-0 h-full w-full ${project.fullBleedImage ? "object-cover" : "object-contain p-6"}`}
-        />
-      </div>
-    </button>
-  );
-}
+import Hero from "@/components/Hero";
+import WorkCarousel from "@/components/WorkCarousel";
 
 export function WorkView({ initialSlug }: { initialSlug?: string }) {
   const [selectedProject, setSelectedProject] = useState<Project | null>(() => {
@@ -87,14 +54,7 @@ export function WorkView({ initialSlug }: { initialSlug?: string }) {
 
   return (
     <>
-      {getAllProjects().map((project, i) => (
-        <Card
-          key={project.id}
-          project={project}
-          delay={Math.min(i * 60, 240)}
-          onClick={() => handleOpen(project)}
-        />
-      ))}
+      <WorkCarousel header={<Hero />} projects={getAllProjects()} onOpen={handleOpen} />
 
       <BottomSheet project={selectedProject} onClose={handleClose} />
     </>

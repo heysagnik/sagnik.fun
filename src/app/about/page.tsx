@@ -1,96 +1,96 @@
+import Link from "next/link";
 import IDCard from "@/components/IDCard";
 import Github from "@/components/Github";
 import Links from "@/components/Links";
-import { EXPERIENCE } from "@/lib/experience";
+import { ACHIEVEMENTS, EXPERIENCE } from "@/lib/experience";
+
+const SECTION = "fade-up-enter flex flex-col gap-5";
 
 export default function About() {
   return (
-    <>
-      <div className="fade-up-enter flex flex-col gap-6">
+    <div className="grid grid-cols-1 gap-12 md:grid-cols-[300px_1fr] md:gap-16">
+      <div className="fade-up-enter md:sticky md:top-10 md:self-start">
         <IDCard />
       </div>
 
-      <div
-        className="fade-up-enter flex flex-col gap-4 text-[14px] leading-[1.4] text-ink"
-        style={{ animationDelay: "60ms" }}
-      >
-        <p>
-          I build things. Mostly agentic systems and real-time
-          infrastructure — the kind where the constraint is actually
-          real-time, not hypothetical.
-        </p>
-        <p>
-          CS undergrad at VIT Bhopal, class of 2027. Most of what I
-          actually know came from internships, not lectures.
-        </p>
-        <p>Stack: JavaScript, TypeScript, Python, GraphQL.</p>
-        <p>
-          Outside of work: 90&apos;s Bollywood, loud. And whatever weird
-          project I haven&apos;t finished yet.
-        </p>
-      </div>
+      <div className="flex min-w-0 flex-col gap-section-gap">
+        <div className="fade-up-enter flex flex-col gap-5" style={{ animationDelay: "60ms" }}>
+          <h1 className="font-display text-[44px] leading-none text-ink">About</h1>
+          <div className="flex max-w-[560px] flex-col gap-4 text-[16px] leading-[1.5] text-ink">
+            <p>Hey, I&apos;m Sagnik. I build software, mostly the AI and backend side.</p>
+            <p>
+              I&apos;m in my last year of CS at VIT Bhopal. Most of what I&apos;ve
+              learned came from two internships: mytribe in Bengaluru, and
+              IndianOil&apos;s refinery in Haldia.
+            </p>
+            <p>
+              At mytribe I built a sales assistant that took provider onboarding
+              from 45 minutes to 18. At IndianOil I got cameras reading number
+              plates at three gates.
+            </p>
+            <p>
+              On the side I make small tools. One of them,{" "}
+              <Link href="/work/diy-analytics" className="link-hover">diy-analytics</Link>,
+              is analytics without cookies. It has 200 stars on GitHub.
+            </p>
+            <p>
+              I listen to a lot of 90&apos;s Bollywood, usually too loud, and
+              there&apos;s always some unfinished project on my desk.
+            </p>
+          </div>
+        </div>
 
-      <div className="fade-up-enter" style={{ animationDelay: "90ms" }}>
-        <Github />
-      </div>
+        <div className="fade-up-enter" style={{ animationDelay: "90ms" }}>
+          <Github />
+        </div>
 
-      <div
-        className="fade-up-enter flex flex-col gap-6 border-t border-border pt-6 text-[14px] leading-[1.4]"
-        style={{ animationDelay: "120ms" }}
-      >
-        <p className="text-ink">Experience</p>
-
-        <div className="relative flex flex-col gap-7">
-          <span
-            aria-hidden
-            className="absolute top-2 bottom-2 left-[3px] w-px bg-border"
-          />
-
-          {EXPERIENCE.map((item) => {
-            const current = item.date.includes("Present");
-            return (
-              <div key={item.company} className="relative pl-6">
-                <span
-                  aria-hidden
-                  className={`absolute top-[5px] left-0 size-[7px] rounded-full ring-4 ring-bg ${
-                    current ? "bg-ink" : "bg-stone-300"
-                  }`}
-                />
-
-                <div className="flex flex-col gap-1.5">
-                  <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-0.5">
-                    <p className="text-ink">
-                      <span className="font-normal">{item.role}</span>
+        <section className={SECTION} style={{ animationDelay: "120ms" }}>
+          <h2 className="font-display text-[34px] leading-none text-ink">Experience</h2>
+          <div className="grid grid-cols-1 gap-4">
+            {EXPERIENCE.map((item) => {
+              const current = item.date.includes("Present");
+              return (
+                  <article key={item.company} className="flex h-full flex-col gap-3 rounded-2xl bg-white p-5 shadow-[0_14px_30px_-20px_rgba(20,20,20,0.4)]">
+                    <div className="flex items-center justify-between gap-3 text-[12px] text-muted">
+                      <span className="tabular-nums">{item.date}</span>
+                      {current && (
+                        <span className="flex items-center gap-1.5 text-[#1d5a19]">
+                          <span className="size-1.5 animate-pulse rounded-full bg-[#3fa73a]" />
+                          now
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-[15px] leading-snug text-ink">
+                      {item.role}
                       <span className="text-muted"> · </span>
-                      <Links
-                        company={item.company}
-                        url={item.url}
-                        screenshot={item.screenshot}
-                      />
+                      <Links company={item.company} url={item.url} screenshot={item.screenshot} />
                     </p>
-                    <p className="shrink-0 text-[13px] text-muted tabular-nums">{item.date}</p>
-                  </div>
-                  <p className="text-[13px] leading-relaxed text-ink/75">{item.description}</p>
-                </div>
-              </div>
-            );
-          })}
+                    <p className="text-[13px] leading-relaxed text-ink/75">{item.description}</p>
+                  </article>
+              );
+            })}
+          </div>
+        </section>
+
+        <section className={SECTION}>
+          <h2 className="font-display text-[34px] leading-none text-ink">Other things</h2>
+          <ul className="flex flex-col gap-3 pt-2 text-[14px] leading-[1.4]">
+            {ACHIEVEMENTS.map((item) => (
+              <li key={item.title} className="flex flex-col gap-0.5">
+                <span className="text-ink">{item.title}</span>
+                <span className="text-[13px] leading-relaxed text-ink/75">{item.detail}</span>
+              </li>
+            ))}
+          </ul>
+        </section>
+
+        <div className="fade-up-enter flex flex-col gap-3 text-[16px] leading-[1.5] text-ink">
+                    <p>
+            Building something, or just want to talk shop?{" "}
+            <a href="mailto:sahoosagnik1@gmail.com" className="link-hover">Say hi.</a>
+          </p>
         </div>
       </div>
-
-      <div
-        className="fade-up-enter flex flex-col gap-4 text-[14px] leading-[1.4] text-ink"
-        style={{ animationDelay: "180ms" }}
-      >
-        <p>
-          I care more about a thing feeling right than looking impressive in
-          a screenshot.
-        </p>
-        <p>
-          Building something agentic, or just want to talk shop? My inbox
-          is open.
-        </p>
-      </div>
-    </>
+    </div>
   );
 }

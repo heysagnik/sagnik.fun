@@ -1,6 +1,7 @@
 import "./globals.css";
 import type { Viewport } from "next";
 import localFont from "next/font/local";
+import { Instrument_Serif } from "next/font/google";
 import { metadata as appMetadata } from "./metadata";
 import Shell from "@/components/Shell";
 
@@ -15,6 +16,8 @@ const aspekta = localFont({
   display: "swap",
 });
 
+const serif = Instrument_Serif({ subsets: ["latin"], weight: "400", variable: "--font-serif", display: "swap" });
+
 export const metadata = appMetadata;
 
 export const viewport: Viewport = {
@@ -28,8 +31,8 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className={`h-full ${aspekta.variable}`} suppressHydrationWarning>
-      <body className="h-full w-full bg-bg text-stone-900 antialiased font-sans">
+    <html lang="en" data-scroll-behavior="smooth" className={`h-full ${aspekta.variable} ${serif.variable}`} suppressHydrationWarning>
+      <body className="relative h-full w-full bg-bg text-stone-900 antialiased font-sans">
         <Shell>{children}</Shell>
       </body>
     </html>
