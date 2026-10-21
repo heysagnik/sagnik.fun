@@ -13,13 +13,16 @@ export default function Hero() {
       </div>
 
       <h1
-        className="fade-up-enter font-display text-[44px] leading-none text-ink"
+        className="fade-up-enter font-display text-[clamp(44px,5vw,52px)] leading-[1.02] text-ink"
         style={stagger(80)}
       >
         Sagnik Sahoo
       </h1>
 
-      <div className="fade-up-enter flex flex-col gap-1.5 text-[16px] leading-[1.5]" style={stagger(160)}>
+      <div
+        className="fade-up-enter flex flex-col gap-1.5 text-[16px] leading-[1.5] tracking-[0.005em]"
+        style={stagger(160)}
+      >
         <p className="text-ink">I build AI agents and the backend systems behind them.</p>
         {mytribe && (
           <p className="text-ink/70">
@@ -47,7 +50,7 @@ export default function Hero() {
       <div className="fade-up-enter" style={stagger(240)}>
         <a
           href="#contact"
-          className="inline-flex h-10 items-center rounded-full bg-ink px-5 text-[14px] leading-none text-bg transition-[transform,background-color] duration-150 ease-out hover:bg-ink/85 active:scale-[0.96]"
+          className="hero-cta relative inline-flex h-10 items-center rounded-full bg-ink px-5 text-[14px] font-medium leading-none tracking-[0.005em] text-bg active:scale-[0.96]"
         >
           Contact me
         </a>

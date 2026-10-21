@@ -383,7 +383,7 @@ export const ROWS: Row[] = [
         href: "https://github.com/heysagnik/screenREC",
         date: "2021–26",
         summary:
-          "A free screen recorder and editor that runs in your browser. No account, no watermark, no time limit. 290+ GitHub stars.",
+          "A free screen recorder and editor that runs in your browser. No account, no watermark, no time limit. 300+ GitHub stars.",
         role: "Product, design, and full-stack build. Solo, open source.",
         stack:
           "Next.js, React, TypeScript, MediaRecorder API, ffmpeg.wasm, Express, Turborepo.",
@@ -391,7 +391,7 @@ export const ROWS: Row[] = [
           {
             heading: "Where it started",
             paragraphs: [
-              "In 2021 I needed to record online classes, and every option came with an install, a watermark, a time cap, or a sign-up wall. Version 1 was one page of Pug and Parcel. People kept using it, so I open-sourced it, and the repo has passed 290 stars.",
+              "In 2021 I needed to record online classes, and every option came with an install, a watermark, a time cap, or a sign-up wall. Version 1 was one page of Pug and Parcel. People kept using it, so I open-sourced it, and the repo has passed 300 stars.",
             ],
           },
           {

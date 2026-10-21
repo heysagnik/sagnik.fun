@@ -1,12 +1,18 @@
-export const EXPERIENCE = [
+export interface Experience {
+  role: string;
+  company: string;
+  url: string;
+  screenshot: string;
+  date: string;
+}
+
+export const EXPERIENCE: Experience[] = [
   {
     role: "AI Engineer Intern",
     company: "mytribe.in",
     url: "https://mytribe.in/",
     screenshot: "/images/experience/mytribe.jpg",
     date: "Jan – Jun 2026",
-    description:
-      "Built a sales assistant that cut provider onboarding from 45 to 18 minutes and lifted client conversion 22%. Worked on a WhatsApp concierge that routes about 1,800 conversations a week, and ran the billing system for 350 providers.",
   },
   {
     role: "Founding Engineer",
@@ -14,8 +20,6 @@ export const EXPERIENCE = [
     url: "https://www.meggfashion.in/",
     screenshot: "/images/experience/megg.jpg",
     date: "Nov 2025 – Present",
-    description:
-      "Built the AI stylist and the backend behind it. Added a cache that cut response times by 45%.",
   },
   {
     role: "SDE Intern",
@@ -23,8 +27,6 @@ export const EXPERIENCE = [
     url: "https://iocl.com/haldia-refinery",
     screenshot: "/images/experience/iocl-haldia.jpg",
     date: "May – Jun 2025",
-    description:
-      "Built an automated parking system across three refinery gates. Built number-plate recognition for three refinery gates (99% accurate) and the parking-wallet backend behind it. Peak-hour gate congestion dropped 40%, with scans under 200ms.",
   },
 ];
 

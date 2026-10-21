@@ -101,8 +101,15 @@ export default function Github() {
   const weeks = buildWeeks(days);
   const monthLabels = buildMonthLabels(weeks);
 
+  const total = days.reduce((sum, d) => sum + d.count, 0);
+
   return (
-    <div className="relative w-full overflow-x-auto">
+    <section aria-label="GitHub contributions" className="surface-card flex flex-col gap-4 p-5">
+      <div className="flex items-baseline justify-between gap-4">
+        <h2 className="text-[15px] font-medium tracking-[-0.006em] text-ink">Contributions</h2>
+        <span className="text-[13px] text-muted tabular-nums">{total.toLocaleString("en-US")} in the last year</span>
+      </div>
+      <div className="relative w-full overflow-x-auto">
       <div
         className="grid text-[10px] leading-none text-muted"
         style={{
@@ -165,6 +172,7 @@ export default function Github() {
           </div>,
           document.body
         )}
-    </div>
+      </div>
+    </section>
   );
 }

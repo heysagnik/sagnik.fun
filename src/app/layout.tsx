@@ -1,22 +1,19 @@
 import "./globals.css";
 import type { Viewport } from "next";
 import localFont from "next/font/local";
-import { Instrument_Serif } from "next/font/google";
+import { Inter } from "next/font/google";
 import { metadata as appMetadata } from "./metadata";
 import Shell from "@/components/Shell";
 
-const aspekta = localFont({
-  src: [
-    { path: "../../public/fonts/Aspekta-400.woff2", weight: "400", style: "normal" },
-    { path: "../../public/fonts/Aspekta-500.woff2", weight: "500", style: "normal" },
-    { path: "../../public/fonts/Aspekta-600.woff2", weight: "600", style: "normal" },
-    { path: "../../public/fonts/Aspekta-700.woff2", weight: "700", style: "normal" },
-  ],
-  variable: "--font-aspekta",
+const inter = Inter({ subsets: ["latin"], axes: ["opsz"], variable: "--font-inter", display: "swap" });
+
+const serif = localFont({
+  src: "../../public/fonts/LibreCaslonCondensed-400.ttf",
+  weight: "400",
+  style: "normal",
+  variable: "--font-serif",
   display: "swap",
 });
-
-const serif = Instrument_Serif({ subsets: ["latin"], weight: "400", variable: "--font-serif", display: "swap" });
 
 export const metadata = appMetadata;
 
@@ -31,7 +28,7 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" data-scroll-behavior="smooth" className={`h-full ${aspekta.variable} ${serif.variable}`} suppressHydrationWarning>
+    <html lang="en" data-scroll-behavior="smooth" className={`h-full ${inter.variable} ${serif.variable}`} suppressHydrationWarning>
       <body className="relative h-full w-full bg-bg text-stone-900 antialiased font-sans">
         <Shell>{children}</Shell>
       </body>

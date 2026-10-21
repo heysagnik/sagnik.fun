@@ -10,29 +10,29 @@ import {
 import {
   motion,
   useMotionValueEvent,
+  useReducedMotion,
   useScroll,
+  useSpring,
   useTransform,
 } from "framer-motion";
 import type { Project } from "@/lib/projects";
+import type { SheetOrigin } from "@/components/BottomSheet";
 import { armDialSound, playDialClick } from "@/lib/dial-sound";
 
 interface Props {
   header: ReactNode;
   projects: Project[];
-  onOpen: (project: Project) => void;
+  onOpen: (project: Project, origin: SheetOrigin) => void;
 }
 
-const DESKTOP = "(min-width: 768px)";
 const EDGE = "pl-[max(24px,calc((100vw-1080px)/2+24px))]";
 
-// Desktop: the header stays put while vertical scroll drives the project track sideways.
-// Mobile: the header scrolls normally and the track is a native horizontal scroller.
+// On every screen size the header stays pinned while vertical scroll drives the project track sideways.
 export default function WorkCarousel({ header, projects, onOpen }: Props) {
   const outer = useRef<HTMLDivElement>(null);
   const viewport = useRef<HTMLDivElement>(null);
   const track = useRef<HTMLDivElement>(null);
   const items = useRef<(HTMLElement | null)[]>([]);
-  const [desktop, setDesktop] = useState(true);
   const [shift, setShift] = useState(0);
   const [stageHeight, setStageHeight] = useState(0);
   const [active, setActive] = useState(0);
@@ -42,7 +42,6 @@ export default function WorkCarousel({ header, projects, onOpen }: Props) {
     const t = track.current;
     const v = viewport.current;
     if (!t || !v) return;
-    setDesktop(window.matchMedia(DESKTOP).matches);
     setShift(Math.max(0, t.scrollWidth - v.clientWidth));
     setStageHeight(window.innerHeight);
   }, []);
@@ -50,7 +49,15 @@ export default function WorkCarousel({ header, projects, onOpen }: Props) {
   useEffect(() => {
     measure();
     window.addEventListener("resize", measure);
-    return () => window.removeEventListener("resize", measure);
+    // Card widths come from CSS (viewport height, fonts, images), so the scroll distance
+    // must be re-measured whenever the track or its viewport changes size, not just on resize.
+    const observer = new ResizeObserver(measure);
+    if (track.current) observer.observe(track.current);
+    if (viewport.current) observer.observe(viewport.current);
+    return () => {
+      window.removeEventListener("resize", measure);
+      observer.disconnect();
+    };
   }, [measure]);
 
   useEffect(() => {
@@ -89,73 +96,27 @@ export default function WorkCarousel({ header, projects, onOpen }: Props) {
     offset: ["start start", "end end"],
   });
   const x = useTransform(scrollYProgress, [0, 1], [0, -shift]);
+  // The track chases the wheel through a critically damped spring (no overshoot), so
+  // notched wheel steps glide like momentum instead of jumping. `x` stays the source of truth.
+  const reduceMotion = useReducedMotion();
+  const glide = useSpring(x, { stiffness: 260, damping: 32, mass: 1 });
 
-  useMotionValueEvent(x, "change", (latest) => {
-    if (desktop) setActive(nearest(-latest));
-  });
-
-  const goTo = (i: number) => {
-    const node = items.current[i];
-    if (!node) return;
-    if (!desktop) {
-      viewport.current?.scrollTo({
-        left: node.offsetLeft - padding(),
-        behavior: "smooth",
-      });
-      return;
-    }
-    const o = outer.current;
-    if (!o || shift === 0) return;
-    const progress = Math.min(
-      1,
-      Math.max(0, (node.offsetLeft - padding()) / shift),
-    );
-    const top = o.getBoundingClientRect().top + window.scrollY;
-    window.scrollTo({ top: top + progress * shift, behavior: "smooth" });
-  };
+  useMotionValueEvent(x, "change", (latest) => setActive(nearest(-latest)));
 
   return (
     <div
       ref={outer}
       className="relative left-1/2 -mt-16 w-screen -translate-x-1/2 md:-mt-20"
-      style={desktop ? { height: shift + stageHeight } : undefined}
+      style={{ height: shift + stageHeight }}
     >
-      <div className="flex flex-col gap-6 overflow-hidden pt-16 md:sticky md:top-0 md:h-screen md:pt-20 md:pb-24">
+      <div className="sticky top-0 flex h-dvh flex-col gap-8 overflow-hidden pt-16 pb-10 md:gap-12 md:pt-20 md:pb-16">
         <div className={`pr-6 ${EDGE}`}>{header}</div>
 
-        <div role="tablist" aria-label="Projects" className={`flex items-center gap-1 ${EDGE}`}>
-          {projects.map((p, i) => (
-            <button
-              key={p.id}
-              type="button"
-              role="tab"
-              aria-selected={i === active}
-              aria-label={p.title}
-              onClick={() => goTo(i)}
-              className={`flex h-7 w-8 items-center justify-center rounded-md transition-colors duration-150 ease-out ${
-                i === active ? "bg-surface" : "hover:bg-surface/60"
-              }`}
-            >
-              <span
-                className={`block w-px bg-ink transition-[height,opacity] duration-150 ease-out ${
-                  i === active ? "h-4 opacity-100" : "h-3 opacity-30"
-                }`}
-              />
-            </button>
-          ))}
-        </div>
-
-        <div
-          ref={viewport}
-          onScroll={(e) => {
-            if (!desktop) setActive(nearest(e.currentTarget.scrollLeft));
-          }}
-          className="snap-x snap-mandatory overflow-x-auto pb-4 md:snap-none md:overflow-hidden md:pb-0"
-        >
+        <div ref={viewport} className="overflow-hidden">
           <motion.div
             ref={track}
-            style={{ x: desktop ? x : 0 }}
-            className={`flex w-max gap-8 pr-6 will-change-transform ${EDGE}`}
+            style={{ x: reduceMotion ? x : glide }}
+            className={`flex w-max gap-4 pr-6 will-change-transform md:gap-8 ${EDGE}`}
           >
             {projects.map((project, i) => (
               <article
@@ -163,11 +124,14 @@ export default function WorkCarousel({ header, projects, onOpen }: Props) {
                 ref={(node) => {
                   items.current[i] = node;
                 }}
-                className="w-[min(78vw,440px)] shrink-0 snap-start md:w-[clamp(240px,calc((100vh_-_560px)*1.628),440px)]"
+                className="w-[clamp(240px,min(86vw,calc((100dvh_-_440px)*1.628)),520px)] shrink-0 md:w-[clamp(280px,calc((100vh_-_530px)*1.628),580px)]"
               >
                 <button
                   type="button"
-                  onClick={() => onOpen(project)}
+                  onClick={(e) => {
+                    const r = e.currentTarget.getBoundingClientRect();
+                    onOpen(project, { x: r.left + r.width / 2, y: r.top + r.height / 2 });
+                  }}
                   className="flex w-full cursor-pointer flex-col gap-4 text-left transition-transform duration-150 ease-out active:scale-[0.98]"
                 >
                   <div
