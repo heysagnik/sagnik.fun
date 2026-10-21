@@ -12,5 +12,4 @@ export const CONTACT_LINKS = [
 export const DOCK: { label: string; href: string; match?: string; external?: boolean }[] = [
   { label: "Work", href: "/work", match: "/work" },
   { label: "About", href: "/about", match: "/about" },
-  { label: "Resume", href: "/resume", external: true },
 ];

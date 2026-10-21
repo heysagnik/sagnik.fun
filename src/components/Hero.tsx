@@ -47,12 +47,20 @@ export default function Hero() {
         )}
       </div>
 
-      <div className="fade-up-enter" style={stagger(240)}>
+      <div className="fade-up-enter flex flex-wrap items-center gap-2" style={stagger(240)}>
         <a
           href="#contact"
           className="hero-cta relative inline-flex h-10 items-center rounded-full bg-ink px-5 text-[14px] font-medium leading-none tracking-[0.005em] text-bg active:scale-[0.96]"
         >
           Contact me
+        </a>
+        <a
+          href="/resume"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="hero-cta-secondary relative inline-flex h-10 items-center rounded-full bg-white px-5 text-[14px] font-medium leading-none tracking-[0.005em] text-ink active:scale-[0.96]"
+        >
+          Resume
         </a>
       </div>
     </header>
