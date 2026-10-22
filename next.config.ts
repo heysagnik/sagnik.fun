@@ -1,6 +1,10 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  experimental: {
+    // A stale cached stylesheet shipped with new HTML once; build CSS fresh every deploy.
+    turbopackFileSystemCacheForBuild: false,
+  },
   async redirects() {
     return [
       { source: '/', destination: '/work', permanent: false },
