@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { createPortal } from "react-dom";
 
+const PREVIEW = { width: 280, height: 175, margin: 16 };
+
 interface LinksProps {
   company: string;
   url: string;
@@ -10,59 +12,42 @@ interface LinksProps {
 }
 
 export default function Links({ company, url, screenshot }: LinksProps) {
-  const [hover, setHover] = useState<{ x: number; y: number } | null>(null);
+  const [position, setPosition] = useState<{ x: number; y: number } | null>(null);
 
-  const getHostname = (linkUrl: string) => {
-    try {
-      return new URL(linkUrl).hostname.replace(/^www\./, "");
-    } catch {
-      return linkUrl;
-    }
-  };
+  function showPreview(e: React.MouseEvent<HTMLAnchorElement>) {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const maxX = window.innerWidth - PREVIEW.width - PREVIEW.margin;
+    setPosition({ x: Math.min(Math.max(rect.left, PREVIEW.margin), maxX), y: rect.bottom + 8 });
+  }
 
   return (
-    <span className="relative inline-block">
+    <>
       <a
         href={url}
         target="_blank"
         rel="noopener noreferrer"
         className="link-hover"
-        onMouseEnter={(e) => {
-          const rect = e.currentTarget.getBoundingClientRect();
-          const previewWidth = 280;
-          const x =
-            typeof window !== "undefined"
-              ? Math.min(
-                  Math.max(rect.left, 16),
-                  window.innerWidth - previewWidth - 16
-                )
-              : rect.left;
-          setHover({ x, y: rect.bottom + 8 });
-        }}
-        onMouseLeave={() => setHover(null)}
+        onMouseEnter={showPreview}
+        onMouseLeave={() => setPosition(null)}
       >
         {company}
       </a>
 
-      {hover &&
-        typeof document !== "undefined" &&
+      {position &&
         createPortal(
           <div
-            className="link-preview pointer-events-none fixed z-50 rounded-xl p-[3px] bg-white/60 backdrop-blur-md border border-white/80 shadow-[0_16px_36px_-8px_rgba(0,0,0,0.22),0_4px_12px_-2px_rgba(0,0,0,0.1)] ring-1 ring-black/[0.06]"
-            style={{ left: hover.x, top: hover.y, width: 280, height: 175 }}
+            className="link-preview pointer-events-none fixed z-50 rounded-xl border border-white/80 bg-white/60 p-[3px] shadow-[0_16px_36px_-8px_rgba(0,0,0,0.22),0_4px_12px_-2px_rgba(0,0,0,0.1)] ring-1 ring-black/[0.06] backdrop-blur-md"
+            style={{ left: position.x, top: position.y, width: PREVIEW.width, height: PREVIEW.height }}
           >
-            <div className="relative h-full w-full overflow-hidden rounded-[9px] bg-stone-100">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={screenshot}
-                alt={`Screenshot of ${getHostname(url)}`}
-                className="absolute inset-0 h-full w-full object-cover object-top"
-              />
-              <div className="pointer-events-none absolute inset-0 rounded-[9px] ring-1 ring-inset ring-black/10" />
-            </div>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={screenshot}
+              alt={`Screenshot of ${company}`}
+              className="size-full rounded-[9px] bg-stone-100 object-cover object-top outline outline-1 -outline-offset-1 outline-black/10"
+            />
           </div>,
           document.body
         )}
-    </span>
+    </>
   );
 }

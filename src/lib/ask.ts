@@ -13,11 +13,11 @@ const FACTS: { keys: string[]; answer: string }[] = [
   {
     keys: ["work", "project", "built", "build", "shipped", "ship"],
     answer:
-      "ScreenREC is the one people know: a free browser screen recorder with 300 GitHub stars. The rest are on the Work page.",
+      "ScreenREC is the one people know: a free browser screen recorder. Across my repos I have 300 GitHub stars. The rest are on the Work page.",
   },
   {
     keys: ["screenrec", "screen"],
-    answer: "ScreenREC is a free screen recorder that runs entirely in your browser. It has 300 stars on GitHub.",
+    answer: "ScreenREC is a free screen recorder that runs entirely in your browser. My repos have 300 stars on GitHub in total.",
   },
   {
     keys: ["intern", "experience", "job", "company", "mytribe", "indianoil"],

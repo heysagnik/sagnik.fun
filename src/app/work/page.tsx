@@ -14,19 +14,6 @@ export function WorkView({ initialSlug }: { initialSlug?: string }) {
   const [origin, setOrigin] = useState<SheetOrigin | null>(null);
 
   useEffect(() => {
-    const slug =
-      initialSlug ||
-      (typeof window !== "undefined"
-        ? window.location.pathname.match(/^\/work\/([^/]+)$/)?.[1]
-        : undefined);
-
-    if (slug) {
-      const project = getProjectById(slug);
-      if (project) setSelectedProject(project);
-    }
-  }, [initialSlug]);
-
-  useEffect(() => {
     const handlePopState = () => {
       const match = window.location.pathname.match(/^\/work\/([^/]+)$/);
       if (match && match[1]) {

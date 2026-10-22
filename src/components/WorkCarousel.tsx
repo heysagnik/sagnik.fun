@@ -15,6 +15,7 @@ import {
   useSpring,
   useTransform,
 } from "framer-motion";
+import Image from "next/image";
 import type { Project } from "@/lib/projects";
 import type { SheetOrigin } from "@/components/BottomSheet";
 import { armDialSound, playDialClick } from "@/lib/dial-sound";
@@ -63,9 +64,8 @@ export default function WorkCarousel({ header, projects, onOpen }: Props) {
   useEffect(() => {
     // wheel cannot unlock audio itself, but it lets playback start if the visitor already clicked earlier.
     const events = ["pointerdown", "pointerup", "click", "keydown", "touchend", "wheel"] as const;
-    const arm = () => armDialSound();
-    events.forEach((e) => window.addEventListener(e, arm));
-    return () => events.forEach((e) => window.removeEventListener(e, arm));
+    events.forEach((e) => window.addEventListener(e, armDialSound));
+    return () => events.forEach((e) => window.removeEventListener(e, armDialSound));
   }, []);
 
   useEffect(() => {
@@ -73,11 +73,8 @@ export default function WorkCarousel({ header, projects, onOpen }: Props) {
     previous.current = active;
   }, [active]);
 
-  const padding = () =>
-    parseFloat(getComputedStyle(track.current!).paddingLeft) || 0;
-
   const nearest = (offset: number) => {
-    const pad = track.current ? padding() : 0;
+    const pad = track.current ? parseFloat(getComputedStyle(track.current).paddingLeft) || 0 : 0;
     let best = 0;
     let bestDist = Infinity;
     items.current.forEach((node, i) => {
@@ -141,15 +138,19 @@ export default function WorkCarousel({ header, projects, onOpen }: Props) {
                         : "aspect-[661/406]"
                     }`}
                   >
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
+                    <Image
                       src={project.image}
                       alt={project.title}
-                      className={`absolute inset-0 h-full w-full ${
+                      fill
+                      sizes="(min-width: 768px) 580px, 86vw"
+                      quality={75}
+                      loading={i < 2 ? "eager" : "lazy"}
+                      fetchPriority={i < 2 ? "high" : "auto"}
+                      className={
                         project.fullBleedImage
                           ? "object-cover"
                           : "object-contain p-6"
-                      }`}
+                      }
                     />
                   </div>
                   <div className="text-[14px] leading-6">

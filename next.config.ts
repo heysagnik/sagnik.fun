@@ -3,6 +3,7 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   async redirects() {
     return [
+      { source: '/', destination: '/work', permanent: false },
       { source: '/resume', destination: '/Sagnik-Sahoo-AI-Engineer.pdf', permanent: false },
       { source: '/resume/ai', destination: '/Sagnik-Sahoo-AI-Engineer.pdf', permanent: false },
       { source: '/resume/ai-engineer', destination: '/Sagnik-Sahoo-AI-Engineer.pdf', permanent: false },
@@ -10,6 +11,7 @@ const nextConfig: NextConfig = {
     ];
   },
   images: {
+    formats: ['image/avif', 'image/webp'],
     qualities: [75, 100],
     remotePatterns: [
       {

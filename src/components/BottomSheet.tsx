@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useRef, useState, useCallback } from "react";
+import { Fragment, useEffect, useRef, useState, useCallback, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence, animate, useMotionValue, useReducedMotion } from "framer-motion";
-import { type Project } from "@/lib/projects";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import type { Project } from "@/lib/projects";
 
 // Resting offset of a drag that keeps decelerating (UIScrollView-style exponential decay).
 const DECELERATION = 0.998;
@@ -35,7 +36,6 @@ export default function BottomSheet({ project, origin = null, onClose }: BottomS
   const reduceMotion = useReducedMotion();
   const [mounted, setMounted] = useState(false);
   const exitMode = useRef<ExitMode>("origin");
-  const contentRef = useRef<HTMLDivElement>(null);
   const galleryRef = useRef<HTMLDivElement>(null);
   const [isDraggingGallery, setIsDraggingGallery] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
@@ -138,6 +138,20 @@ export default function BottomSheet({ project, origin = null, onClose }: BottomS
       ? [project.image]
       : [];
 
+  const details: { label: string; value: ReactNode }[] = [
+    { label: "Role", value: project?.role },
+    { label: "Stack", value: project?.stack },
+    {
+      label: "Link",
+      value: project?.href && (
+        <a href={project.href} target="_blank" rel="noopener noreferrer" className="link-hover break-all">
+          {project.href.replace(/^https?:\/\//, "")}
+        </a>
+      ),
+    },
+    { label: "Credits", value: project?.credits },
+  ].filter((detail) => detail.value);
+
   if (!mounted) return null;
 
   // The sheet grows out of the tapped card and returns to it. With no known card
@@ -194,13 +208,12 @@ export default function BottomSheet({ project, origin = null, onClose }: BottomS
             </div>
 
             <div
-              ref={contentRef}
               onScroll={(e) => {
                 if (e.currentTarget.scrollTop > 8) setIsExpanded(true);
               }}
               className="flex-1 overflow-y-auto overflow-x-hidden pb-28 pt-2"
             >
-              <div className="relative mb-2 w-full">
+              <div className="mb-2">
                 <div
                   ref={galleryRef}
                   onMouseDown={handleMouseDown}
@@ -223,7 +236,7 @@ export default function BottomSheet({ project, origin = null, onClose }: BottomS
                           loop
                           muted
                           playsInline
-                          preload="metadata"
+                          preload={i === 0 ? "auto" : "none"}
                           aria-label={`${project.title} slide ${i + 1}`}
                           className="block h-auto w-auto max-h-[70dvh] max-w-[90vw] pointer-events-none"
                         />
@@ -232,6 +245,8 @@ export default function BottomSheet({ project, origin = null, onClose }: BottomS
                           src={imgSrc}
                           alt={`${project.title} slide ${i + 1}`}
                           draggable={false}
+                          loading={i < 2 ? "eager" : "lazy"}
+                          decoding="async"
                           className="block h-auto w-auto max-h-[70dvh] max-w-[90vw] pointer-events-none"
                         />
                       )}
@@ -251,38 +266,20 @@ export default function BottomSheet({ project, origin = null, onClose }: BottomS
                   </div>
                   {images.length > 1 && (
                     <div className="flex shrink-0 gap-2 pt-1">
-                    <button
-                      type="button"
-                      onClick={() => scrollGallery("left")}
-                      aria-label="Previous image"
-                      className="inline-flex size-10 items-center justify-center rounded-full bg-surface text-ink transition-[transform,background-color] duration-150 ease-out hover:bg-border active:scale-[0.96]"
-                    >
-                      <svg height="12" width="12" viewBox="0 0 12 12" fill="none" aria-hidden>
-                        <polyline
-                          points="7.75 1.75 3.5 6 7.75 10.25"
-                          stroke="currentColor"
-                          strokeWidth="1.5"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        />
-                      </svg>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => scrollGallery("right")}
-                      aria-label="Next image"
-                      className="inline-flex size-10 items-center justify-center rounded-full bg-surface text-ink transition-[transform,background-color] duration-150 ease-out hover:bg-border active:scale-[0.96]"
-                    >
-                      <svg height="12" width="12" viewBox="0 0 12 12" fill="none" aria-hidden>
-                        <polyline
-                          points="4.25 10.25 8.5 6 4.25 1.75"
-                          stroke="currentColor"
-                          strokeWidth="1.5"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        />
-                      </svg>
-                    </button>
+                      {([
+                        { direction: "left", label: "Previous image", Icon: ChevronLeft },
+                        { direction: "right", label: "Next image", Icon: ChevronRight },
+                      ] as const).map(({ direction, label, Icon }) => (
+                        <button
+                          key={direction}
+                          type="button"
+                          onClick={() => scrollGallery(direction)}
+                          aria-label={label}
+                          className="inline-flex size-10 items-center justify-center rounded-full bg-surface text-ink transition-[transform,background-color] duration-150 ease-out hover:bg-border active:scale-[0.96]"
+                        >
+                          <Icon className="size-4" strokeWidth={1.75} aria-hidden />
+                        </button>
+                      ))}
                     </div>
                   )}
                 </header>
@@ -308,41 +305,14 @@ export default function BottomSheet({ project, origin = null, onClose }: BottomS
                   </div>
                 )}
 
-                {(project.role || project.stack || project.href || project.credits) && (
+                {details.length > 0 && (
                   <dl className="mt-10 grid grid-cols-[88px_1fr] gap-x-4 gap-y-4 border-t border-border pt-6 text-[14px] leading-6">
-                    {project.role && (
-                      <>
-                        <dt className="text-muted">Role</dt>
-                        <dd className="text-ink">{project.role}</dd>
-                      </>
-                    )}
-                    {project.stack && (
-                      <>
-                        <dt className="text-muted">Stack</dt>
-                        <dd className="text-ink">{project.stack}</dd>
-                      </>
-                    )}
-                    {project.href && (
-                      <>
-                        <dt className="text-muted">Link</dt>
-                        <dd className="min-w-0">
-                          <a
-                            href={project.href}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="link-hover break-all"
-                          >
-                            {project.href.replace(/^https?:\/\//, "")}
-                          </a>
-                        </dd>
-                      </>
-                    )}
-                    {project.credits && (
-                      <>
-                        <dt className="text-muted">Credits</dt>
-                        <dd className="text-ink">{project.credits}</dd>
-                      </>
-                    )}
+                    {details.map(({ label, value }) => (
+                      <Fragment key={label}>
+                        <dt className="text-muted">{label}</dt>
+                        <dd className="min-w-0 text-ink">{value}</dd>
+                      </Fragment>
+                    ))}
                   </dl>
                 )}
               </article>

@@ -49,7 +49,7 @@ export default function IDCard() {
   const visible = useMotionValue(0);
   // Extra strap length in px along the strap axis (positive = stretched down).
   const stretch = useMotionValue(0);
-    const strapScale = useTransform(stretch, (v) => 1 + v / STRAP_LENGTH);
+  const strapScale = useTransform(stretch, (v) => 1 + v / STRAP_LENGTH);
 
   // Pressing the card gives instant feedback on pointer-down, before any movement.
   const press = useSpring(1, { stiffness: 500, damping: 40 });

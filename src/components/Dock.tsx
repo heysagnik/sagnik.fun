@@ -18,7 +18,12 @@ const ITEM =
   "relative flex h-10 items-center rounded-full px-4 text-[14px] leading-none transition-transform duration-150 ease-out active:scale-[0.96]";
 
 const SPRING = { type: "spring", duration: 0.4, bounce: 0 } as const;
-const FADE = { duration: 0.15, ease: [0.23, 1, 0.32, 1] } as const;
+const BLUR_FADE = {
+  initial: { opacity: 0, filter: "blur(4px)" },
+  animate: { opacity: 1, filter: "blur(0px)" },
+  exit: { opacity: 0, filter: "blur(4px)" },
+  transition: { duration: 0.15, ease: [0.23, 1, 0.32, 1] },
+} as const;
 
 export default function Dock() {
   const pathname = usePathname() ?? "";
@@ -81,7 +86,7 @@ export default function Dock() {
       aria-label="Primary"
       className="fixed bottom-5 left-1/2 z-40 flex w-[min(560px,calc(100vw-32px))] -translate-x-1/2 flex-col items-center gap-2"
     >
-      <Script src="/liquid-glass.js" strategy="afterInteractive" onReady={applyLiquidGlass} />
+      <Script src="/liquid-glass.js" strategy="lazyOnload" onReady={applyLiquidGlass} />
 
       <AnimatePresence>
         {open && reply && (
@@ -106,17 +111,14 @@ export default function Dock() {
         layout
         transition={SPRING}
         style={{ borderRadius: 9999 }}
-        className={`glass flex items-center p-1 ${open ? "w-full" : "w-auto gap-1"}`}
+        className={`glass flex items-center p-1 ${open ? "w-full" : "w-auto"}`}
       >
         <AnimatePresence mode="popLayout" initial={false}>
           {open ? (
             <motion.form
               key="chat"
               onSubmit={submit}
-              initial={{ opacity: 0, filter: "blur(4px)" }}
-              animate={{ opacity: 1, filter: "blur(0px)" }}
-              exit={{ opacity: 0, filter: "blur(4px)" }}
-              transition={FADE}
+              {...BLUR_FADE}
               className="flex w-full items-center gap-2 pl-4"
             >
               <input
@@ -149,16 +151,11 @@ export default function Dock() {
           ) : (
             <motion.div
               key="links"
-              initial={{ opacity: 0, filter: "blur(4px)" }}
-              animate={{ opacity: 1, filter: "blur(0px)" }}
-              exit={{ opacity: 0, filter: "blur(4px)" }}
-              transition={FADE}
+              {...BLUR_FADE}
               className="flex items-center gap-1"
             >
               {DOCK.map((item) => {
-                const m = item.match;
-                const active =
-                  !!m && (pathname === m || pathname.startsWith(`${m}/`) || (m === "/work" && pathname === "/"));
+                const active = pathname === item.match || pathname.startsWith(`${item.match}/`);
 
                 return (
                   <Link
