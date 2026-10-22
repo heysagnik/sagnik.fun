@@ -33,6 +33,7 @@ export default function Dock() {
   const wasOpen = useRef(false);
   const [open, setOpen] = useState(false);
   const [value, setValue] = useState("");
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
   const [reply, setReply] = useState<{ q: string; a: string } | null>(null);
 
   // Optional refraction (Chromium only). Skipped when the visitor asks for less transparency;
@@ -73,6 +74,21 @@ export default function Dock() {
     };
   }, [open]);
 
+  // Mobile keyboards cover the bottom of the screen without resizing the layout, so lift the dock by
+  // however much of the visual viewport the keyboard takes while the chat input is open.
+  useEffect(() => {
+    const viewport = window.visualViewport;
+    if (!open || !viewport) return;
+    const update = () => setKeyboardHeight(Math.max(0, window.innerHeight - viewport.height - viewport.offsetTop));
+    viewport.addEventListener("resize", update);
+    viewport.addEventListener("scroll", update);
+    return () => {
+      viewport.removeEventListener("resize", update);
+      viewport.removeEventListener("scroll", update);
+      setKeyboardHeight(0);
+    };
+  }, [open]);
+
   const submit = (e: FormEvent) => {
     e.preventDefault();
     const q = value.trim();
@@ -84,6 +100,7 @@ export default function Dock() {
   return (
     <nav
       aria-label="Primary"
+      style={keyboardHeight ? { bottom: keyboardHeight + 8 } : undefined}
       className="fixed bottom-5 left-1/2 z-40 flex w-[min(560px,calc(100vw-32px))] -translate-x-1/2 flex-col items-center gap-2"
     >
       <Script src="/liquid-glass.js" strategy="lazyOnload" onReady={applyLiquidGlass} />
