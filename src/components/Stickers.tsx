@@ -24,7 +24,7 @@ function Face({ x = 50, y = 56 }: { x?: number; y?: number }) {
 
 function Medal() {
   return (
-    <svg viewBox="10 8 80 88" className="size-[4.5rem]" aria-hidden>
+    <svg viewBox="10 8 80 88" className="size-14 sm:size-[4.5rem]" aria-hidden>
       <defs>
         <linearGradient id="medal-disc" x1="0.2" y1="0" x2="0.8" y2="1">
           <stop offset="0" stopColor="#f4f4f6" />
@@ -50,7 +50,7 @@ function Medal() {
 
 function Star() {
   return (
-    <svg viewBox="10 8 80 88" className="size-[4.5rem]" aria-hidden>
+    <svg viewBox="10 8 80 88" className="size-14 sm:size-[4.5rem]" aria-hidden>
       <defs>
         <linearGradient id="star-body" x1="0.2" y1="0" x2="0.8" y2="1">
           <stop offset="0" stopColor="#ffe873" />
@@ -73,7 +73,7 @@ function Star() {
 
 function Users() {
   return (
-    <svg viewBox="10 8 80 88" className="size-[4.5rem]" aria-hidden>
+    <svg viewBox="10 8 80 88" className="size-14 sm:size-[4.5rem]" aria-hidden>
       <defs>
         <linearGradient id="users-front" x1="0.2" y1="0" x2="0.8" y2="1">
           <stop offset="0" stopColor="#6ee7a8" />
@@ -106,29 +106,29 @@ const FACE: Record<StickerIcon, string> = {
 
 export default function Stickers() {
   return (
-    <ul className="grid grid-cols-3 gap-3">
-      {STICKERS.map(({ icon, kicker, title }, i) => {
+    <ul className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+      {STICKERS.map(({ icon, value, label }, i) => {
         const Art = ART[icon];
         return (
-        <li
-          key={title}
-          onPointerMove={trackPointer}
-          onPointerLeave={resetPointer}
-          className="sticker rounded-[26px] bg-white p-1"
-          style={{ "--tilt": TILTS[i % TILTS.length] } as CSSProperties}
-        >
-          <div
-            className={`sticker-face flex aspect-[4/5] flex-col items-center rounded-[22px] bg-gradient-to-br p-3 min-[420px]:p-3.5 ${FACE[icon]}`}
+          <li
+            key={label}
+            onPointerMove={trackPointer}
+            onPointerLeave={resetPointer}
+            className="sticker rounded-[26px] bg-white p-1"
+            style={{ "--tilt": TILTS[i % TILTS.length] } as CSSProperties}
           >
-            <span className="grid flex-1 place-items-center">
-              <Art />
-            </span>
-            <div className="flex flex-col items-center gap-1 text-center">
-              <p className="text-[10px] font-semibold uppercase leading-none tracking-[0.06em] opacity-70">{kicker}</p>
-              <p className="text-[14px] font-semibold leading-tight tracking-[-0.01em] min-[420px]:text-[15px]">{title}</p>
+            <div
+              className={`sticker-face flex h-full items-center gap-4 rounded-[22px] bg-gradient-to-br p-3.5 sm:aspect-[4/5] sm:flex-col sm:gap-1 ${FACE[icon]}`}
+            >
+              <span className="grid shrink-0 place-items-center sm:flex-1">
+                <Art />
+              </span>
+              <div className="flex min-w-0 flex-col gap-1 sm:items-center sm:text-center">
+              <p className="text-[24px] font-bold leading-none tracking-[-0.03em] tabular-nums sm:text-[30px]">{value}</p>
+              <p className="text-[13px] font-medium leading-[1.3] opacity-75 sm:text-[12px]">{label}</p>
             </div>
-          </div>
-        </li>
+            </div>
+          </li>
         );
       })}
     </ul>

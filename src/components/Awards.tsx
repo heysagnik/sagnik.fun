@@ -15,14 +15,14 @@ const LABEL: Record<Award["tier"], string> = {
 
 export default function Awards() {
   return (
-    <ul className="flex flex-wrap gap-x-4 gap-y-6 pb-3">
+    <ul className="grid grid-cols-3 gap-x-3 gap-y-7 pb-3 sm:flex sm:flex-wrap sm:gap-x-4 sm:gap-y-6">
       {AWARDS.map(({ name, logo, position, tier, background, padding = "16%" }, i) => (
         <li
           key={name}
           title={`${position}, ${name}`}
           onPointerMove={trackPointer}
           onPointerLeave={resetPointer}
-          className="sticker relative size-[76px] rounded-[22px] bg-white p-1 sm:size-20"
+          className="sticker relative aspect-square w-full rounded-[22px] bg-white p-1 sm:size-20"
           style={{ "--tilt": TILTS[i % TILTS.length] } as CSSProperties}
         >
           <div

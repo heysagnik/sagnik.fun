@@ -38,14 +38,14 @@ export type StickerIcon = "medal" | "users" | "star";
 
 export interface Sticker {
   icon: StickerIcon;
-  kicker: string;
-  title: string;
+  value: string;
+  label: string;
 }
 
 export const STICKERS: Sticker[] = [
-  { icon: "users", kicker: "Daily active users", title: "11.5K on my apps" },
-  { icon: "star", kicker: "GitHub stars", title: "300 across my repos" },
-  { icon: "medal", kicker: "Product Hunt", title: "#2 Product of the Day" },
+  { icon: "users", value: "11.5K", label: "daily active users on my apps" },
+  { icon: "star", value: "300", label: "GitHub stars across my repos" },
+  { icon: "medal", value: "#2", label: "Product of the Day on Product Hunt" },
 ];
 
 export interface Award {
