@@ -52,7 +52,7 @@ export const ROWS: Row[] = [
       href: "https://analytics.sagnik.fun",
       date: "2025",
       summary:
-        "Self-hosted web analytics on a single Postgres database. No cookies, no third party, and a dashboard that answers the questions I actually ask.",
+        "Self-hosted web analytics on a single Postgres database. No cookies, no third parties, and a dashboard built around the questions I actually ask.",
       role: "Product design, architecture, and full-stack build. Solo, open source (MIT).",
       stack:
         "Next.js, TypeScript, PostgreSQL, Drizzle ORM, Vercel Queues, Tailwind CSS, MCP.",
@@ -61,7 +61,7 @@ export const ROWS: Row[] = [
         {
           heading: "Why I built it",
           paragraphs: [
-            "Hosted analytics is easy, but your visitors' data ends up with someone else. Self-hosted tools fix that, then ask for a heavy stack and a heavy script. I wanted a third option: one Postgres database, no cookies, and a tracker that can't break the page it measures.",
+            "Hosted analytics is easy, but your visitors' data ends up with someone else. Self-hosted tools fix that, then demand a heavy stack and a heavy script. I wanted a third option: one Postgres database, no cookies, and a tracker that can't break the page it measures.",
           ],
         },
         {
@@ -101,7 +101,7 @@ export const ROWS: Row[] = [
       href: "https://github.com/heysagnik/byte",
       date: "2026",
       summary:
-        "A personal AI agent that does the whole errand: it researches in parallel, makes the phone call for you, and asks before it commits you to anything.",
+        "A personal AI agent that runs the whole errand. It researches in parallel, makes the phone call for you, and asks before committing you to anything.",
       role: "Product, agent architecture, and full-stack build. Solo.",
       stack:
         "React 19, Vite, Tailwind CSS, Zustand, Node.js, Express, TypeScript, Gemini, ElevenLabs, Twilio, MCP, MongoDB.",
@@ -110,7 +110,7 @@ export const ROWS: Row[] = [
         {
           heading: "The gap",
           paragraphs: [
-            "Most assistants stop at advice. They name three restaurants and leave you to find the number, make the call, and sit through the hold music. That last step, talking to a stranger on the phone, is the part many people put off. Byte takes it on.",
+            "Most assistants stop at advice. They name three restaurants, then leave you to find the number, make the call, and sit through the hold music. That last step, talking to a stranger on the phone, is the one people put off. Byte takes it on.",
           ],
         },
         {
@@ -144,7 +144,7 @@ export const ROWS: Row[] = [
       href: "https://lumen.sagnik.fun/getting-started",
       date: "2026",
       summary:
-        "Upload PDFs, get checkable facts. Every claim links to its exact quote and page, and Lumen flags where your documents agree or contradict.",
+        "Upload PDFs, get facts you can check. Every claim links to its exact quote and page, and Lumen flags where your documents agree or contradict each other.",
       role: "Product, architecture, and full-stack build. Solo.",
       stack:
         "TypeScript, Express, Next.js, PostgreSQL with pgvector, Drizzle ORM, Cloudflare AI Gateway, pdfjs, Tesseract.",
@@ -153,7 +153,7 @@ export const ROWS: Row[] = [
         {
           heading: "The problem",
           paragraphs: [
-            "Comparing two filings by eye is slow. A model summary is fast but unverifiable, and for due diligence an answer you can't trace is worth nothing. I wanted every claim to be checkable in seconds.",
+            "Comparing two filings by eye is slow. A model summary is fast but unverifiable, and in due diligence an answer you can't trace is worthless. I wanted every claim checkable in seconds.",
           ],
         },
         {
@@ -237,7 +237,7 @@ export const ROWS: Row[] = [
         href: "https://chikki-lemon.vercel.app/",
         date: "2025",
         summary:
-          "A Chrome extension that rewrites your text where you type it and keeps it sounding like you. Work in progress.",
+          "A Chrome extension that rewrites your text right where you type it, and keeps it sounding like you. Work in progress.",
         role: "Product design and extension development. Solo.",
         stack: "React, TypeScript, Vite, WebExtensions API, React Router.",
         sections: [
@@ -287,7 +287,7 @@ export const ROWS: Row[] = [
       href: "https://read.cv/heysagnik",
       date: "2024",
       summary:
-        "Doctor booking in three steps: find a specialist, pay and get a token, consult. No more long waits at the hospital.",
+        "Book a doctor in three steps: find a specialist, pay and get a token, then consult. No more long waits at the hospital.",
       role: "Lead UI/UX Designer and Frontend Engineer.",
       stack: "React Native, Node.js, PostgreSQL.",
       sections: [
@@ -317,7 +317,7 @@ export const ROWS: Row[] = [
         href: "",
         date: "2024",
         summary:
-          "A mental wellness companion for people who feel alone: a private AI friend, backed by real doctors. I co-founded it and own product and engineering.",
+          "A mental wellness companion for people who feel alone: a private AI friend, backed by real doctors. I co-founded it and lead product and engineering.",
         role: "Co-founder. Product and engineering.",
         credits: "Sagnik Sahoo and Sayantan, co-founders. A Foressss product.",
         sections: [
@@ -367,7 +367,7 @@ export const ROWS: Row[] = [
         href: "https://github.com/heysagnik/attenda",
         date: "2025",
         summary:
-          "Scan an attendee's encrypted QR code to log attendance at an event, then search the history. Built in Flutter.",
+          "Scan an attendee's encrypted QR code to log attendance at an event, then search the full history. Built in Flutter.",
         stack: "Flutter, Dart, MongoDB.",
       },
     ],
@@ -383,7 +383,7 @@ export const ROWS: Row[] = [
         href: "https://github.com/heysagnik/screenREC",
         date: "2021–26",
         summary:
-          "A free screen recorder and editor that runs in your browser. No account, no watermark, no time limit. Over 290 GitHub stars.",
+          "A free screen recorder and editor that runs in your browser. No account, no watermark, no time limit.",
         role: "Product, design, and full-stack build. Solo, open source.",
         stack:
           "Next.js, React, TypeScript, MediaRecorder API, ffmpeg.wasm, Express, Turborepo.",
@@ -391,7 +391,7 @@ export const ROWS: Row[] = [
           {
             heading: "Where it started",
             paragraphs: [
-              "In 2021 I needed to record online classes, and every option came with an install, a watermark, a time cap, or a sign-up wall. Version 1 was one page of Pug and Parcel. People kept using it, so I open-sourced it, and the repo has passed 290 stars.",
+              "In 2021 I needed to record online classes, and every option came with an install, a watermark, a time cap, or a sign-up wall. Version 1 was one page of Pug and Parcel. People kept using it, so I open-sourced it.",
             ],
           },
           {

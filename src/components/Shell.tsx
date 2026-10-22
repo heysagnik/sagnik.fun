@@ -1,41 +1,22 @@
 "use client";
 
-import { useEffect, useState, type ReactNode } from "react";
+import type { ReactNode } from "react";
+import { MotionConfig } from "framer-motion";
 import Contact from "@/components/Contact";
-import Sidebar from "@/components/Sidebar";
-import Clock from "@/components/Clock";
-import { QUOTES } from "@/lib/quotes";
+import Dock from "@/components/Dock";
 
-interface ShellProps {
-  children: ReactNode;
-}
-
-export default function Shell({ children }: ShellProps) {
-  const [quote, setQuote] = useState(QUOTES[0]);
-
-  useEffect(() => {
-    setQuote(QUOTES[Math.floor(Math.random() * QUOTES.length)]);
-  }, []);
-
+export default function Shell({ children }: { children: ReactNode }) {
   return (
-    <>
-      <div
+    <MotionConfig reducedMotion="user">
+      <main
         id="top"
-        className="mx-auto flex w-full max-w-[1000px] flex-col gap-12 px-6 pt-6 pb-page-y md:flex-row md:gap-content-gap md:pt-page-y"
+        className="mx-auto flex w-full max-w-[1080px] min-w-0 flex-col gap-section-gap px-6 pt-16 pb-36 md:pt-20"
       >
-        <Sidebar />
+        {children}
+      </main>
 
-        <main className="flex min-w-0 flex-1 flex-col gap-section-gap">
-          {children}
-
-          <footer className="flex flex-col gap-1 border-t border-border pt-3 text-[14px] leading-6 text-muted sm:flex-row sm:items-center sm:justify-between">
-            <Clock />
-            <p>{quote.text}</p>
-          </footer>
-        </main>
-      </div>
-
+      <Dock />
       <Contact />
-    </>
+    </MotionConfig>
   );
 }

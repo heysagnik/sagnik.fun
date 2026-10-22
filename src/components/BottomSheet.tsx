@@ -1,25 +1,82 @@
 "use client";
 
-import { useEffect, useRef, useState, useCallback } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { type Project } from "@/lib/projects";
+import { Fragment, useEffect, useRef, useState, useCallback, type ReactNode } from "react";
+import { createPortal } from "react-dom";
+import { motion, AnimatePresence, animate, useMotionValue, useReducedMotion } from "framer-motion";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import type { Project } from "@/lib/projects";
+
+// Resting offset of a drag that keeps decelerating (UIScrollView-style exponential decay).
+const DECELERATION = 0.998;
+const projectRest = (velocity: number) => ((velocity / 1000) * DECELERATION) / (1 - DECELERATION);
+
+const SPRING = { type: "spring", duration: 0.45, bounce: 0 } as const;
+const DISMISS_DISTANCE = 160;
+const DIM_RANGE = 360;
+const ORIGIN_SCALE = 0.85;
+const COLLAPSED_TOP = 0.08; // the sheet rests at 92dvh, so its top edge sits 8dvh down
+
+/** Viewport-space centre of the card that opened the sheet. */
+export interface SheetOrigin {
+  x: number;
+  y: number;
+}
+
+type ExitMode = "origin" | "drag";
 
 export interface BottomSheetProps {
   project: Project | null;
+  origin?: SheetOrigin | null;
   onClose: () => void;
 }
 
-export default function BottomSheet({ project, onClose }: BottomSheetProps) {
-  const contentRef = useRef<HTMLDivElement>(null);
+const root = () => document.documentElement;
+
+export default function BottomSheet({ project, origin = null, onClose }: BottomSheetProps) {
+  const reduceMotion = useReducedMotion();
+  const [mounted, setMounted] = useState(false);
+  const exitMode = useRef<ExitMode>("origin");
   const galleryRef = useRef<HTMLDivElement>(null);
   const [isDraggingGallery, setIsDraggingGallery] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
   const startXRef = useRef(0);
   const scrollLeftRef = useRef(0);
+  // 0 = sheet closed, 1 = fully open. Drives the scrim and how far the page recedes,
+  // so both follow the finger during a drag instead of only reacting when it ends.
+  const progress = useMotionValue(0);
+
+  useEffect(() => setMounted(true), []);
+
+  useEffect(() => progress.on("change", (v) => root().style.setProperty("--push", v.toFixed(4))), [progress]);
+
+  useEffect(() => {
+    if (reduceMotion) {
+      progress.set(project ? 1 : 0);
+      return;
+    }
+    if (project) {
+      root().style.setProperty("--sheet-y", `${window.scrollY + window.innerHeight / 2}px`);
+      root().dataset.sheet = "";
+    }
+    const controls = animate(progress, project ? 1 : 0, SPRING);
+    return () => controls.stop();
+  }, [project, progress, reduceMotion]);
+
+  const clearPush = () => {
+    delete root().dataset.sheet;
+    root().style.removeProperty("--push");
+    root().style.removeProperty("--sheet-y");
+  };
+
+  const dismiss = (mode: ExitMode) => {
+    exitMode.current = mode;
+    onClose();
+  };
 
   useEffect(() => {
     if (!project) return;
 
+    exitMode.current = "origin";
     setIsExpanded(false);
     const originalOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
@@ -30,7 +87,7 @@ export default function BottomSheet({ project, onClose }: BottomSheetProps) {
 
     function handleKeyDown(e: KeyboardEvent) {
       if (e.key === "Escape") {
-        onClose();
+        dismiss("origin");
       }
     }
 
@@ -40,12 +97,13 @@ export default function BottomSheet({ project, onClose }: BottomSheetProps) {
       document.body.style.overflow = originalOverflow;
       window.removeEventListener("keydown", handleKeyDown);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [project, onClose]);
 
   const scrollGallery = (direction: "left" | "right") => {
     if (!galleryRef.current) return;
     const card = galleryRef.current.querySelector<HTMLElement>(".gallery-slide");
-    const scrollAmount = card ? card.offsetWidth + 16 : 500;
+    const scrollAmount = card ? card.offsetWidth + 20 : 500;
     galleryRef.current.scrollBy({
       left: direction === "left" ? -scrollAmount : scrollAmount,
       behavior: "smooth",
@@ -64,7 +122,7 @@ export default function BottomSheet({ project, onClose }: BottomSheetProps) {
       if (!isDraggingGallery || !galleryRef.current) return;
       e.preventDefault();
       const x = e.pageX - galleryRef.current.offsetLeft;
-      const walk = (x - startXRef.current) * 1.5;
+      const walk = x - startXRef.current;
       galleryRef.current.scrollLeft = scrollLeftRef.current - walk;
     },
     [isDraggingGallery]
@@ -80,70 +138,96 @@ export default function BottomSheet({ project, onClose }: BottomSheetProps) {
       ? [project.image]
       : [];
 
-  return (
-    <AnimatePresence>
+  const details: { label: string; value: ReactNode }[] = [
+    { label: "Role", value: project?.role },
+    { label: "Stack", value: project?.stack },
+    {
+      label: "Link",
+      value: project?.href && (
+        <a href={project.href} target="_blank" rel="noopener noreferrer" className="link-hover break-all">
+          {project.href.replace(/^https?:\/\//, "")}
+        </a>
+      ),
+    },
+    { label: "Credits", value: project?.credits },
+  ].filter((detail) => detail.value);
+
+  if (!mounted) return null;
+
+  // The sheet grows out of the tapped card and returns to it. With no known card
+  // (direct link, back button) it falls back to sliding up from the bottom edge.
+  const fromCard = !!origin;
+  const transformOrigin = origin
+    ? `${origin.x}px ${origin.y - window.innerHeight * (isExpanded ? 0 : COLLAPSED_TOP)}px`
+    : undefined;
+
+  return createPortal(
+    <AnimatePresence custom={exitMode.current} onExitComplete={clearPush}>
       {project && (
         <div className="fixed inset-0 z-50 flex items-end justify-center">
           <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.2, ease: "easeOut" }}
-            onClick={onClose}
+            style={{ opacity: progress }}
+            onClick={() => dismiss("origin")}
             className="fixed inset-0 bg-black/40 backdrop-blur-xs"
           />
 
           <motion.div
-            initial={{ y: "100%", height: "92dvh" }}
+            custom={exitMode.current}
+            initial={fromCard ? { opacity: 0, scale: ORIGIN_SCALE, height: "92dvh" } : { y: "100%", height: "92dvh" }}
             animate={{
               y: 0,
+              opacity: 1,
+              scale: 1,
               height: isExpanded ? "100dvh" : "92dvh",
               borderTopLeftRadius: isExpanded ? 0 : 20,
               borderTopRightRadius: isExpanded ? 0 : 20,
             }}
-            exit={{ y: "100%" }}
-            transition={{
-              type: "spring",
-              damping: 32,
-              stiffness: 320,
-              mass: 0.8,
+            variants={{
+              exit: (mode: ExitMode) =>
+                mode === "origin" && fromCard ? { opacity: 0, scale: ORIGIN_SCALE } : { y: "100%" },
             }}
+            exit="exit"
+            transition={SPRING}
+            style={{ transformOrigin }}
             drag="y"
             dragConstraints={{ top: 0 }}
             dragElastic={0.12}
+            onDrag={(_, info) => progress.set(1 - Math.min(1, Math.max(0, info.offset.y / DIM_RANGE)))}
             onDragEnd={(_, info) => {
-              if (info.offset.y > 120 || info.velocity.y > 400) {
-                onClose();
+              // Decide from where the flick will land, not where the finger lifted.
+              if (info.offset.y + projectRest(info.velocity.y) > DISMISS_DISTANCE) {
+                dismiss("drag");
+              } else {
+                animate(progress, 1, SPRING);
               }
             }}
             className="relative z-10 flex w-full flex-col overflow-hidden rounded-t-[20px] bg-bg shadow-2xl ring-1 ring-black/5"
           >
             <div className="flex w-full shrink-0 cursor-grab items-center justify-center pt-3 pb-2 active:cursor-grabbing">
-              <div className="h-1 w-8 rounded-full bg-stone-300" />
+              <div className="h-1 w-9 rounded-full bg-black/15" />
             </div>
 
             <div
-              ref={contentRef}
               onScroll={(e) => {
                 if (e.currentTarget.scrollTop > 8) setIsExpanded(true);
               }}
               className="flex-1 overflow-y-auto overflow-x-hidden pb-28 pt-2"
             >
-              <div className="w-full relative mb-4">
+              <div className="mb-2">
                 <div
                   ref={galleryRef}
                   onMouseDown={handleMouseDown}
                   onMouseMove={handleMouseMove}
                   onMouseUp={handleMouseUpOrLeave}
                   onMouseLeave={handleMouseUpOrLeave}
-                  className={`flex h-[260px] sm:h-[330px] md:h-[390px] w-full flex-row gap-4 overflow-x-auto scroll-smooth snap-x snap-mandatory select-none [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden px-6 sm:px-[max(1.5rem,calc((100vw-36rem)/2))] ${
+                  className={`flex w-full flex-row items-center gap-5 py-6 overflow-x-auto [overflow-anchor:none] select-none ${isDraggingGallery ? "" : "snap-x snap-mandatory"} [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden px-6 sm:px-[max(1.5rem,calc((100vw-36rem)/2))] ${
                     isDraggingGallery ? "cursor-grabbing" : "cursor-grab"
                   }`}
                 >
                   {images.map((imgSrc, i) => (
                     <div
                       key={`${imgSrc}-${i}`}
-                      className="gallery-slide relative h-full w-auto shrink-0 overflow-hidden rounded-xl bg-surface/60 border border-stone-200/50 snap-center shadow-xs flex items-center justify-center"
+                      className="gallery-slide relative shrink-0 overflow-hidden rounded-lg bg-surface/60 snap-center shadow-[0_0_0_1px_rgba(0,0,0,0.06),0_10px_28px_-16px_rgba(31,30,27,0.3)]"
                     >
                       {/\.(mp4|webm)$/i.test(imgSrc) ? (
                         <video
@@ -152,16 +236,18 @@ export default function BottomSheet({ project, onClose }: BottomSheetProps) {
                           loop
                           muted
                           playsInline
-                          preload="metadata"
+                          preload={i === 0 ? "auto" : "none"}
                           aria-label={`${project.title} slide ${i + 1}`}
-                          className="h-full w-auto max-w-[90vw] object-contain pointer-events-none"
+                          className="block h-auto w-auto max-h-[70dvh] max-w-[90vw] pointer-events-none"
                         />
                       ) : (
                         <img
                           src={imgSrc}
                           alt={`${project.title} slide ${i + 1}`}
                           draggable={false}
-                          className="h-full w-auto max-w-[90vw] object-contain pointer-events-none"
+                          loading={i < 2 ? "eager" : "lazy"}
+                          decoding="async"
+                          className="block h-auto w-auto max-h-[70dvh] max-w-[90vw] pointer-events-none"
                         />
                       )}
                     </div>
@@ -169,119 +255,72 @@ export default function BottomSheet({ project, onClose }: BottomSheetProps) {
                 </div>
               </div>
 
-              <article className="mx-auto w-full max-w-xl px-6">
-                <div className="flex gap-1 pb-4">
-                  <button
-                    type="button"
-                    onClick={() => scrollGallery("left")}
-                    aria-label="Previous image"
-                    className="inline-flex px-1.5 py-1 items-center justify-center rounded-md border border-stone-200 bg-white/80 text-xs text-stone-800 hover:text-stone-900 backdrop-blur-sm hover:bg-white hover:border-stone-300 transition-colors active:scale-95"
-                  >
-                    <svg height="12" width="12" viewBox="0 0 12 12" fill="none">
-                      <polyline
-                        points="7.75 1.75 3.5 6 7.75 10.25"
-                        stroke="currentColor"
-                        strokeWidth="1.5"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                    </svg>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => scrollGallery("right")}
-                    aria-label="Next image"
-                    className="inline-flex px-1.5 py-1 items-center justify-center rounded-md border border-stone-200 bg-white/80 text-xs text-stone-800 hover:text-stone-900 backdrop-blur-sm hover:bg-white hover:border-stone-300 transition-colors active:scale-95"
-                  >
-                    <svg height="12" width="12" viewBox="0 0 12 12" fill="none">
-                      <polyline
-                        points="4.25 10.25 8.5 6 4.25 1.75"
-                        stroke="currentColor"
-                        strokeWidth="1.5"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                    </svg>
-                  </button>
-                </div>
-
-                <header className="flex flex-row gap-4 justify-between items-baseline pb-3">
-                  <div className="flex flex-col items-start sm:flex-row sm:items-center sm:gap-1">
-                    <h1 className="text-base font-medium text-ink">
-                      {project.title}
-                    </h1>
-                    <span className="text-sm text-stone-500">
-                      <span className="hidden sm:inline">— </span>
+              <article className="mx-auto w-full max-w-xl px-6 pt-2">
+                <header className="flex items-start justify-between gap-4 pb-5">
+                  <div className="min-w-0">
+                    <h1 className="font-display text-[34px] leading-[1.05] text-ink">{project.title}</h1>
+                    <p className="mt-2 text-[14px] tracking-[0.005em] text-muted tabular-nums">
                       {project.meta}
-                    </span>
+                      {project.date ? ` · ${project.date}` : ""}
+                    </p>
                   </div>
-                  {project.date && (
-                    <time className="block text-xs text-stone-400 tabular-nums shrink-0">
-                      {project.date}
-                    </time>
+                  {images.length > 1 && (
+                    <div className="flex shrink-0 gap-2 pt-1">
+                      {([
+                        { direction: "left", label: "Previous image", Icon: ChevronLeft },
+                        { direction: "right", label: "Next image", Icon: ChevronRight },
+                      ] as const).map(({ direction, label, Icon }) => (
+                        <button
+                          key={direction}
+                          type="button"
+                          onClick={() => scrollGallery(direction)}
+                          aria-label={label}
+                          className="inline-flex size-10 items-center justify-center rounded-full bg-surface text-ink transition-[transform,background-color] duration-150 ease-out hover:bg-border active:scale-[0.96]"
+                        >
+                          <Icon className="size-4" strokeWidth={1.75} aria-hidden />
+                        </button>
+                      ))}
+                    </div>
                   )}
                 </header>
 
                 {project.summary && (
-                  <p className="text-sm leading-relaxed text-stone-600 pb-6">
+                  <p className="pb-8 text-[17px] leading-[1.55] tracking-[-0.011em] text-ink">
                     {project.summary}
                   </p>
                 )}
 
-                <div className="space-y-6 text-sm leading-relaxed text-stone-600">
-                  {project.sections && project.sections.length > 0 && (
-                    <div className="space-y-5">
-                      {project.sections.map((section, sIdx) => (
-                        <div key={section.heading || sIdx} className="space-y-2">
-                          <p className="font-medium text-ink">{section.heading}</p>
-                          {section.paragraphs.map((p, idx) => (
-                            <p key={idx}>{p}</p>
-                          ))}
-                        </div>
-                      ))}
-                    </div>
-                  )}
+                {project.sections && project.sections.length > 0 && (
+                  <div className="space-y-7">
+                    {project.sections.map((section, sIdx) => (
+                      <section key={section.heading || sIdx} className="space-y-2">
+                        <h2 className="text-[15px] font-medium tracking-[-0.006em] text-ink">{section.heading}</h2>
+                        {section.paragraphs.map((p, idx) => (
+                          <p key={idx} className="text-[15px] leading-[1.65] text-ink/70">
+                            {p}
+                          </p>
+                        ))}
+                      </section>
+                    ))}
+                  </div>
+                )}
 
-                  {project.role && (
-                    <div>
-                      <p className="font-medium text-ink">Role</p>
-                      <p className="text-stone-600">{project.role}</p>
-                    </div>
-                  )}
-
-                  {project.stack && (
-                    <div>
-                      <p className="font-medium text-ink">Stack</p>
-                      <p className="text-stone-600">{project.stack}</p>
-                    </div>
-                  )}
-
-                  {project.href && (
-                    <div>
-                      <p className="font-medium text-ink">Link</p>
-                      <a
-                        href={project.href}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-ink underline underline-offset-2 decoration-stone-300 hover:decoration-ink"
-                      >
-                        {project.href.replace(/^https?:\/\//, "")}
-                      </a>
-                    </div>
-                  )}
-
-                  {project.credits && (
-                    <div>
-                      <p className="font-medium text-ink">Credits</p>
-                      <p className="text-stone-600">{project.credits}</p>
-                    </div>
-                  )}
-                </div>
+                {details.length > 0 && (
+                  <dl className="mt-10 grid grid-cols-[88px_1fr] gap-x-4 gap-y-4 border-t border-border pt-6 text-[14px] leading-6">
+                    {details.map(({ label, value }) => (
+                      <Fragment key={label}>
+                        <dt className="text-muted">{label}</dt>
+                        <dd className="min-w-0 text-ink">{value}</dd>
+                      </Fragment>
+                    ))}
+                  </dl>
+                )}
               </article>
             </div>
           </motion.div>
         </div>
       )}
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body,
   );
 }

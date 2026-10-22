@@ -12,7 +12,6 @@ interface ContributionDay {
 }
 
 interface ContributionsResponse {
-  total: Record<string, number>;
   contributions: ContributionDay[];
 }
 
@@ -86,85 +85,83 @@ export default function Github() {
       signal: controller.signal,
     })
       .then((res) => (res.ok ? (res.json() as Promise<ContributionsResponse>) : null))
-      .then((data) => {
-        if (data) setDays(data.contributions);
-      })
+      .then((data) => data && setDays(data.contributions))
       .catch(() => {});
 
-    return () => {
-      controller.abort();
-    };
+    return () => controller.abort();
   }, []);
 
   if (!days) return null;
 
   const weeks = buildWeeks(days);
   const monthLabels = buildMonthLabels(weeks);
+  const total = days.reduce((sum, d) => sum + d.count, 0);
 
   return (
-    <div className="relative w-full overflow-x-auto">
-      <div
-        className="grid text-[10px] leading-none text-muted"
-        style={{
-          gridTemplateColumns: `repeat(${weeks.length}, 11px)`,
-          gap: "3px",
-          marginBottom: 4,
-        }}
-      >
-        {monthLabels.map(({ index, label }) => (
-          <span key={index} style={{ gridColumnStart: index + 1 }}>
-            {label}
-          </span>
-        ))}
+    <section aria-label="GitHub contributions" className="surface-card flex flex-col gap-4 p-5">
+      <div className="flex items-baseline justify-between gap-4">
+        <h2 className="text-[15px] font-medium tracking-[-0.006em] text-ink">Contributions</h2>
+        <span className="text-[13px] text-muted tabular-nums">{total.toLocaleString("en-US")} in the last year</span>
       </div>
+      <div className="relative w-full overflow-x-auto">
+        <div
+          className="grid text-[10px] leading-none text-muted"
+          style={{ gridTemplateColumns: `repeat(${weeks.length}, 11px)`, gap: "3px", marginBottom: 4 }}
+        >
+          {monthLabels.map(({ index, label }) => (
+            <span key={index} style={{ gridColumnStart: index + 1 }}>
+              {label}
+            </span>
+          ))}
+        </div>
 
-      <div
-        className="grid"
-        style={{
-          gridTemplateColumns: `repeat(${weeks.length}, 11px)`,
-          gridTemplateRows: "repeat(7, 11px)",
-          gridAutoFlow: "column",
-          gap: "3px",
-        }}
-      >
-        {weeks.map((week, wi) =>
-          week.map((day, di) => {
-            if (!day) return <div key={`${wi}-${di}`} />;
-            return (
-              <div
-                key={day.date}
-                role="img"
-                aria-label={`${day.count} contributions on ${TOOLTIP_DATE_FORMATTER.format(toUTCDate(day.date))}`}
-                className="cursor-default rounded-[2px] transition-[filter] duration-100 ease-out hover:brightness-90"
-                style={{ backgroundColor: LEVEL_COLORS[day.level] }}
-                onMouseEnter={(e) => {
-                  const rect = e.currentTarget.getBoundingClientRect();
-                  const x = Math.min(
-                    Math.max(rect.left + rect.width / 2, 60),
-                    window.innerWidth - 60
-                  );
-                  setHovered({ day, x, y: rect.top });
-                }}
-                onMouseLeave={() => setHovered(null)}
-              />
-            );
-          })
-        )}
+        <div
+          className="grid"
+          style={{
+            gridTemplateColumns: `repeat(${weeks.length}, 11px)`,
+            gridTemplateRows: "repeat(7, 11px)",
+            gridAutoFlow: "column",
+            gap: "3px",
+          }}
+        >
+          {weeks.map((week, wi) =>
+            week.map((day, di) => {
+              if (!day) return <div key={`${wi}-${di}`} />;
+              return (
+                <div
+                  key={day.date}
+                  role="img"
+                  aria-label={`${day.count} contributions on ${TOOLTIP_DATE_FORMATTER.format(toUTCDate(day.date))}`}
+                  className="cursor-default rounded-[2px] transition-[filter] duration-100 ease-out hover:brightness-90"
+                  style={{ backgroundColor: LEVEL_COLORS[day.level] }}
+                  onMouseEnter={(e) => {
+                    const rect = e.currentTarget.getBoundingClientRect();
+                    const x = Math.min(
+                      Math.max(rect.left + rect.width / 2, 60),
+                      window.innerWidth - 60
+                    );
+                    setHovered({ day, x, y: rect.top });
+                  }}
+                  onMouseLeave={() => setHovered(null)}
+                />
+              );
+            })
+          )}
+        </div>
+
+        {hovered &&
+          createPortal(
+            <div
+              className="pointer-events-none fixed z-50 -translate-x-1/2 -translate-y-full rounded-md bg-ink px-2 py-1 text-[12px] whitespace-nowrap text-bg shadow-md"
+              style={{ left: hovered.x, top: hovered.y - 6 }}
+            >
+              <span className="tabular-nums">{hovered.day.count}</span>{" "}
+              {hovered.day.count === 1 ? "contribution" : "contributions"} on{" "}
+              {TOOLTIP_DATE_FORMATTER.format(toUTCDate(hovered.day.date))}
+            </div>,
+            document.body
+          )}
       </div>
-
-      {hovered &&
-        typeof document !== "undefined" &&
-        createPortal(
-          <div
-            className="pointer-events-none fixed z-50 -translate-x-1/2 -translate-y-full rounded-md bg-ink px-2 py-1 text-[12px] whitespace-nowrap text-bg shadow-md"
-            style={{ left: hovered.x, top: hovered.y - 6 }}
-          >
-            <span className="tabular-nums">{hovered.day.count}</span>{" "}
-            {hovered.day.count === 1 ? "contribution" : "contributions"} on{" "}
-            {TOOLTIP_DATE_FORMATTER.format(toUTCDate(hovered.day.date))}
-          </div>,
-          document.body
-        )}
-    </div>
+    </section>
   );
 }
