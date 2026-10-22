@@ -82,14 +82,17 @@ export default function IDCard() {
     drop.set(-(rootTop + ROOT_PADDING_TOP + CARD_HEIGHT + 24));
     visible.set(1);
 
+    // On phones the landing jolt is a quarter as strong: a short settle instead of a long swing.
+    const jolt = window.matchMedia("(max-width: 767px)").matches ? 0.25 : 1;
+
     // Falls with almost no bounce; the elastic strap supplies the rebound instead.
     const fall = animate(drop, 0, { type: "spring", stiffness: 140, damping: 22, mass: 1 });
     let landed = false;
     const unsubscribe = drop.on("change", (v) => {
       if (landed || v < -14) return;
       landed = true;
-      controls.current = animate(angle, 0, { ...PENDULUM, velocity: 130 });
-      stretchControls.current = animate(stretch, 0, { ...STRETCH, velocity: 520 });
+      controls.current = animate(angle, 0, { ...PENDULUM, velocity: 130 * jolt });
+      stretchControls.current = animate(stretch, 0, { ...STRETCH, velocity: 520 * jolt });
     });
 
     return () => {
