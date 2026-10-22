@@ -3,16 +3,11 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import Link from "next/link";
 import Script from "next/script";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import { DOCK } from "@/lib/nav";
-import { ask } from "@/lib/ask";
-
-declare global {
-  interface Window {
-    liquidGlass?: (el: Element, opts?: { scale?: number }) => { supported: boolean; destroy: () => void };
-  }
-}
+import { applyLiquidGlass } from "@/lib/liquid-glass";
+import { createId, createMessage, saveThread } from "@/lib/thread";
 
 const ITEM =
   "relative flex h-10 items-center rounded-full px-4 text-[14px] leading-none transition-transform duration-150 ease-out active:scale-[0.96]";
@@ -27,6 +22,7 @@ const BLUR_FADE = {
 
 export default function Dock() {
   const pathname = usePathname() ?? "";
+  const router = useRouter();
   const pill = useRef<HTMLDivElement>(null);
   const input = useRef<HTMLInputElement>(null);
   const askButton = useRef<HTMLButtonElement>(null);
@@ -34,21 +30,10 @@ export default function Dock() {
   const [open, setOpen] = useState(false);
   const [value, setValue] = useState("");
   const [keyboardHeight, setKeyboardHeight] = useState(0);
-  const [reply, setReply] = useState<{ q: string; a: string } | null>(null);
-
-  // Optional refraction (Chromium only). Skipped when the visitor asks for less transparency;
-  // elsewhere the library applies a plain frosted blur and `.glass` keeps its own styling.
-  const applyLiquidGlass = () => {
-    const el = pill.current;
-    if (!el || !window.liquidGlass) return;
-    if (window.matchMedia("(prefers-reduced-transparency: reduce), (prefers-contrast: more)").matches) return;
-    if (window.liquidGlass(el, { scale: -70 }).supported) el.classList.add("glass-liquid");
-  };
 
   const close = () => {
     setOpen(false);
     setValue("");
-    setReply(null);
   };
 
   useEffect(() => {
@@ -79,7 +64,10 @@ export default function Dock() {
   useEffect(() => {
     const viewport = window.visualViewport;
     if (!open || !viewport) return;
-    const update = () => setKeyboardHeight(Math.max(0, window.innerHeight - viewport.height - viewport.offsetTop));
+    const update = () =>
+      setKeyboardHeight(
+        Math.max(0, window.innerHeight - viewport.height - viewport.offsetTop),
+      );
     viewport.addEventListener("resize", update);
     viewport.addEventListener("scroll", update);
     return () => {
@@ -91,10 +79,12 @@ export default function Dock() {
 
   const submit = (e: FormEvent) => {
     e.preventDefault();
-    const q = value.trim();
-    if (!q) return;
-    setReply({ q, a: ask(q) });
-    setValue("");
+    const text = value.trim();
+    if (!text) return;
+    // The first message opens the conversation as its own full-screen thread, which answers it.
+    const id = createId();
+    saveThread(id, [createMessage("user", text)]);
+    router.push(`/thread/${id}`);
   };
 
   return (
@@ -103,25 +93,13 @@ export default function Dock() {
       style={keyboardHeight ? { bottom: keyboardHeight + 8 } : undefined}
       className="fixed bottom-5 left-1/2 z-40 flex w-[min(560px,calc(100vw-32px))] -translate-x-1/2 flex-col items-center gap-2"
     >
-      <Script src="/liquid-glass.js" strategy="lazyOnload" onReady={applyLiquidGlass} />
-
-      <AnimatePresence>
-        {open && reply && (
-          <motion.div
-            key={reply.q}
-            role="status"
-            initial={{ opacity: 0, y: 8, scale: 0.97, filter: "blur(4px)" }}
-            animate={{ opacity: 1, y: 0, scale: 1, filter: "blur(0px)" }}
-            exit={{ opacity: 0, y: 4, transition: { duration: 0.12 } }}
-            transition={SPRING}
-            style={{ transformOrigin: "bottom center" }}
-            className="glass w-full rounded-3xl px-5 py-4 text-[14px] leading-[1.55] text-ink"
-          >
-            <p className="text-muted">{reply.q}</p>
-            <p className="mt-1">{reply.a}</p>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      <Script
+        src="/liquid-glass.js"
+        strategy="lazyOnload"
+        onReady={() => {
+          if (pill.current) applyLiquidGlass(pill.current);
+        }}
+      />
 
       <motion.div
         ref={pill}
@@ -154,7 +132,13 @@ export default function Dock() {
                 disabled={!value.trim()}
                 className="relative grid size-10 shrink-0 place-items-center rounded-full bg-ink text-bg transition-[transform,opacity] duration-150 ease-out active:scale-[0.96] disabled:opacity-30"
               >
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden>
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 16 16"
+                  fill="none"
+                  aria-hidden
+                >
                   <path
                     d="M8 13V3M3.5 7.5 8 3l4.5 4.5"
                     stroke="currentColor"
@@ -172,7 +156,9 @@ export default function Dock() {
               className="flex items-center gap-1"
             >
               {DOCK.map((item) => {
-                const active = pathname === item.match || pathname.startsWith(`${item.match}/`);
+                const active =
+                  pathname === item.match ||
+                  pathname.startsWith(`${item.match}/`);
 
                 return (
                   <Link
@@ -185,10 +171,16 @@ export default function Dock() {
                       <motion.span
                         layoutId="dock-active"
                         className="absolute inset-0 rounded-full bg-ink"
-                        transition={{ type: "spring", duration: 0.3, bounce: 0 }}
+                        transition={{
+                          type: "spring",
+                          duration: 0.3,
+                          bounce: 0,
+                        }}
                       />
                     )}
-                    <span className={`relative z-10 transition-colors duration-150 ${active ? "text-bg" : "text-ink"}`}>
+                    <span
+                      className={`relative z-10 transition-colors duration-150 ${active ? "text-bg" : "text-ink"}`}
+                    >
                       {item.label}
                     </span>
                   </Link>

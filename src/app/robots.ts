@@ -7,6 +7,7 @@ export default function robots(): MetadataRoute.Robots {
       {
         userAgent: '*',
         allow: '/',
+        disallow: '/thread/',
       },
       // AI Search Bots & Web Crawlers (Perplexity, SearchGPT, Claude, Gemini, Apple Intelligence)
       {
