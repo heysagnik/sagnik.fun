@@ -50,7 +50,7 @@ export default function Hero() {
 
       <div className="fade-up-enter flex flex-wrap items-center gap-2" style={stagger(240)}>
         <a
-          href="#contact"
+          href="mailto:sahoosagnik1@gmail.com"
           className="hero-cta relative inline-flex h-11 items-center rounded-full bg-ink pl-4 pr-5 text-[14px] font-medium leading-none tracking-[0.005em] text-bg active:scale-[0.96]"
         >
           <Mail className="cta-icon size-4" strokeWidth={1.75} aria-hidden />
