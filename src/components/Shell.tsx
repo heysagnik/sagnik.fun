@@ -7,10 +7,11 @@ import Contact from "@/components/Contact";
 import Dock from "@/components/Dock";
 
 export default function Shell({ children }: { children: ReactNode }) {
-  // A thread is a full-screen conversation of its own, so the page chrome steps aside.
-  const isThread = usePathname()?.startsWith("/thread/");
+  // A thread and the resume viewer are full-screen pages of their own, so the page chrome steps aside.
+  const pathname = usePathname();
+  const standalone = pathname?.startsWith("/thread/") || pathname?.startsWith("/resume");
 
-  if (isThread) return <MotionConfig reducedMotion="user">{children}</MotionConfig>;
+  if (standalone) return <MotionConfig reducedMotion="user">{children}</MotionConfig>;
 
   return (
     <MotionConfig reducedMotion="user">
