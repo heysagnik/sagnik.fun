@@ -4,7 +4,7 @@ import { useEffect, useRef, useState, type FormEvent } from "react";
 import Script from "next/script";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
-import { ArrowUp, ChevronLeft } from "lucide-react";
+import { ArrowUp, ChevronLeft } from "./icons";
 import { ask } from "@/lib/ask";
 import { applyLiquidGlass } from "@/lib/liquid-glass";
 import { createMessage, loadThread, saveThread, type ThreadMessage } from "@/lib/thread";

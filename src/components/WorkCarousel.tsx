@@ -19,6 +19,7 @@ import Image from "next/image";
 import type { Project } from "@/lib/projects";
 import type { SheetOrigin } from "@/components/BottomSheet";
 import { armDialSound, playDialClick } from "@/lib/dial-sound";
+import { preloadProject } from "@/lib/preload";
 
 interface Props {
   header: ReactNode;
@@ -125,6 +126,8 @@ export default function WorkCarousel({ header, projects, onOpen }: Props) {
               >
                 <button
                   type="button"
+                  onPointerEnter={() => preloadProject(project)}
+                  onTouchStart={() => preloadProject(project)}
                   onClick={(e) => {
                     const r = e.currentTarget.getBoundingClientRect();
                     onOpen(project, { x: r.left + r.width / 2, y: r.top + r.height / 2 });

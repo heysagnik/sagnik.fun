@@ -1,4 +1,4 @@
-import { ArrowUpRight, Mail } from "lucide-react";
+import { ArrowUpRight, Mail } from "./icons";
 import Logo from "@/components/Logo";
 import { EXPERIENCE } from "@/lib/experience";
 

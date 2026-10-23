@@ -3,7 +3,8 @@
 import { Fragment, useEffect, useRef, useState, useCallback, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence, animate, useMotionValue, useReducedMotion } from "framer-motion";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "./icons";
+import imageSizes from "@/lib/image-sizes.json";
 import type { Project } from "@/lib/projects";
 
 // Resting offset of a drag that keeps decelerating (UIScrollView-style exponential decay).
@@ -20,6 +21,35 @@ const COLLAPSED_TOP = 0.08; // the sheet rests at 92dvh, so its top edge sits 8d
 export interface SheetOrigin {
   x: number;
   y: number;
+}
+
+const IMAGE_SIZES: Record<string, number[]> = imageSizes;
+
+// Holds the image's real footprint while it loads (so nothing shifts), then fades it in.
+function GalleryImage({ src, alt, eager }: { src: string; alt: string; eager: boolean }) {
+  const [loaded, setLoaded] = useState(false);
+  const [width, height] = IMAGE_SIZES[src] ?? [];
+  const reserved =
+    !loaded && width && height
+      ? { aspectRatio: `${width} / ${height}`, height: `min(50dvh, ${height}px, calc(70vw * ${height} / ${width}))` }
+      : undefined;
+
+  return (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      ref={(img) => {
+        if (img?.complete && !loaded) setLoaded(true);
+      }}
+      src={src}
+      alt={alt}
+      draggable={false}
+      loading={eager ? "eager" : "lazy"}
+      decoding="async"
+      onLoad={() => setLoaded(true)}
+      style={reserved}
+      className={`block h-auto w-auto max-h-[50dvh] max-w-[70vw] pointer-events-none transition-opacity duration-200 ease-out ${loaded ? "opacity-100" : "opacity-0"}`}
+    />
+  );
 }
 
 type ExitMode = "origin" | "drag";
@@ -238,17 +268,10 @@ export default function BottomSheet({ project, origin = null, onClose }: BottomS
                           playsInline
                           preload={i === 0 ? "auto" : "none"}
                           aria-label={`${project.title} slide ${i + 1}`}
-                          className="block h-auto w-auto max-h-[70dvh] max-w-[90vw] pointer-events-none"
+                          className="block h-auto w-auto max-h-[50dvh] max-w-[70vw] pointer-events-none"
                         />
                       ) : (
-                        <img
-                          src={imgSrc}
-                          alt={`${project.title} slide ${i + 1}`}
-                          draggable={false}
-                          loading={i < 2 ? "eager" : "lazy"}
-                          decoding="async"
-                          className="block h-auto w-auto max-h-[70dvh] max-w-[90vw] pointer-events-none"
-                        />
+                        <GalleryImage src={imgSrc} alt={`${project.title} slide ${i + 1}`} eager={i < 2} />
                       )}
                     </div>
                   ))}
