@@ -1,5 +1,6 @@
 import "./globals.css";
 import type { Viewport } from "next";
+import Script from "next/script";
 import localFont from "next/font/local";
 import { Inter } from "next/font/google";
 import { metadata as appMetadata } from "./metadata";
@@ -31,6 +32,12 @@ export default function RootLayout({
     <html lang="en" data-scroll-behavior="smooth" className={`h-full ${inter.variable} ${serif.variable}`} suppressHydrationWarning>
       <body className="relative h-full w-full bg-bg text-stone-900 antialiased font-sans">
         <Shell>{children}</Shell>
+        <Script
+          src="https://diy-analytics.vercel.app/api/tracker.js?site-id=site_rs48gjlrr2ed2wni"
+          strategy="afterInteractive"
+          async
+          defer
+        />
       </body>
     </html>
   );
